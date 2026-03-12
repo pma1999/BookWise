@@ -1,0 +1,161 @@
+<div class="home-page">
+
+  <!-- ── Discovery form (always visible except during loading) ── -->
+  @if (isFormVisible) {
+    <section class="form-section" [class.compact]="appState === 'results' || appState === 'empty'">
+      <div class="form-container">
+        @if (appState === 'idle') {
+          <div class="form-hero-header">
+            <h1 class="hero-title">¿Qué vas a leer después?</h1>
+            <p class="hero-subtitle">
+              Describe lo que buscas y encontraremos libros reales que encajan contigo.
+            </p>
+            <span class="hero-ornament" aria-hidden="true">— ✦ —</span>
+          </div>
+        }
+
+        <!-- Profile Quality Widget -->
+        <app-profile-quality [ratingCount]="ratingCount" />
+
+        <app-discovery-form
+          [disabled]="false"
+          [resetOptionalTrigger]="resetOptionalTrigger"
+          [mode]="formMode"
+          (modeChange)="onModeChange($event)"
+          (formSubmit)="onFormSubmit($event)"
+        />
+      </div>
+    </section>
+  }
+
+  <!-- ── Loading state ─────────────────────────────────── -->
+  @if (isLoadingVisible) {
+    <div class="loading-container">
+      <app-loading-state
+        [purpose]="currentPurpose"
+        (timedOut)="onTimeout()"
+      />
+    </div>
+  }
+
+  <!-- ── Timeout state ──────────────────────────────────── -->
+  @if (appState === 'timeout') {
+    <div class="status-panel timeout-panel">
+      <span class="status-icon">⏳</span>
+      <h2 class="status-title">{{ apiError?.message }}</h2>
+      <div class="status-actions">
+        <button class="btn-primary" (click)="onRetry()" type="button">
+          <span class="material-icons" aria-hidden="true">refresh</span>
+          Reintentar
+        </button>
+        <button class="btn-secondary" (click)="onSimplifySearch()" type="button">
+          <span class="material-icons" aria-hidden="true">tune</span>
+          Simplificar búsqueda
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- ── Error banner ───────────────────────────────────── -->
+  @if (appState === 'error' && apiError) {
+    <div class="error-banner" role="alert" aria-live="assertive">
+      <span class="material-icons error-icon" aria-hidden="true">error_outline</span>
+      <div class="error-body">
+        <p class="error-message">{{ apiError.message }}</p>
+        <div class="error-actions">
+          @if (apiError.retryable) {
+            <button class="btn-retry" (click)="onRetry()" type="button">
+              <span class="material-icons" aria-hidden="true">refresh</span>
+              Reintentar
+            </button>
+          }
+          <button class="btn-simplify" (click)="onSimplifySearch()" type="button">
+            <span class="material-icons" aria-hidden="true">tune</span>
+            Simplificar búsqueda
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Results ────────────────────────────────────────── -->
+  @if (appState === 'results') {
+    <div class="results-container fade-in">
+      <div class="results-list">
+        @for (book of books; track book.title) {
+          <div class="result-item">
+            <app-book-card
+              [book]="book"
+              variant="discovery"
+              [isSaved]="isBookSaved(book)"
+              [isDiscarded]="isBookDiscarded(book)"
+              [isRead]="isBookRead(book)"
+              [bookRating]="getBookRating(book)"
+              [loadingSimilar]="getRelatedBooksState(book)?.isLoading ?? false"
+              (saved)="onSave($event)"
+              (unsaved)="onUnsave($event)"
+              (discarded)="onDiscard($event)"
+              (rated)="onRate($event)"
+              (cardClicked)="onBookClick($event)"
+              (similarRequested)="onSimilarRequested($event)"
+            />
+
+            <!-- Related Books Section -->
+            @if (getRelatedBooksState(book); as relatedState) {
+              <app-related-books
+                [seedBook]="relatedState.book"
+                [books]="relatedState.books"
+                [isLoading]="relatedState.isLoading"
+                [expanded]="true"
+                [savedTitles]="savedTitles"
+                [discardedTitles]="discardedTitles"
+                [readTitles]="readTitles"
+                [ratings]="ratings"
+                (closed)="onRelatedBooksClosed(book)"
+                (bookSaved)="onSave($event)"
+                (bookUnsaved)="onUnsave($event)"
+                (bookDiscarded)="onDiscard($event)"
+                (bookRated)="onRate($event)"
+                (bookClicked)="onBookClick($event)"
+                (similarRequested)="onSimilarRequested($event)"
+              />
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ── Empty state ────────────────────────────────────── -->
+  @if (appState === 'empty') {
+    <div class="status-panel empty-panel">
+      <span class="status-icon" aria-hidden="true">🔍</span>
+      <h2 class="status-title">No encontramos libros que encajen</h2>
+      <p class="status-desc">
+        Intenta ser más amplio en tu descripción o cambia algunos filtros.
+      </p>
+      <button class="btn-primary" (click)="onModifySearch()" type="button">
+        <span class="material-icons" aria-hidden="true">edit</span>
+        Modificar búsqueda
+      </button>
+    </div>
+  }
+
+  <!-- ── Book Detail Panel ──────────────────────────────── -->
+  @if (selectedBook) {
+    <app-book-detail
+      [book]="selectedBook"
+      [isSaved]="isBookSaved(selectedBook)"
+      [isDiscarded]="isBookDiscarded(selectedBook)"
+      [isRead]="isBookRead(selectedBook)"
+      [bookRating]="getBookRating(selectedBook)"
+      (closed)="onBookDetailClose()"
+      (saved)="onSave($event)"
+      (unsaved)="onUnsave($event)"
+      (discarded)="onDiscard($event)"
+      (rated)="onRate($event)"
+      (similarRequested)="onSimilarRequested($event)"
+    />
+  }
+
+</div>

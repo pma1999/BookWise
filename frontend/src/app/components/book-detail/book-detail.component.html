@@ -1,0 +1,173 @@
+<div class="book-detail-overlay" (click)="onOverlayClick($event)" aria-hidden="true">
+  <aside class="book-detail-panel" role="dialog" aria-modal="true" [attr.aria-label]="'Detalles de ' + book.title">
+
+    <!-- Close button -->
+    <button class="btn-close" (click)="close()" type="button" aria-label="Cerrar">
+      <span class="material-icons">close</span>
+    </button>
+
+    <div class="detail-content">
+      <!-- Cover Section -->
+      <div class="detail-cover-section">
+        @if (coverUrl) {
+          <img
+            [src]="coverUrl"
+            [alt]="'Portada de ' + book.title"
+            class="detail-cover-img"
+          />
+        } @else {
+          <div class="detail-cover-placeholder" [style.background]="'linear-gradient(145deg, hsl(35, 55%, 32%), hsl(80, 60%, 22%))'">
+            <span class="cover-initials">{{ book.title.charAt(0) }}</span>
+          </div>
+        }
+      </div>
+
+      <!-- Info Section -->
+      <div class="detail-info">
+        <h1 class="detail-title">{{ book.title }}</h1>
+        <p class="detail-author">{{ book.author }}</p>
+
+        <div class="detail-meta">
+          @if (book.year) {
+            <span class="meta-item">{{ book.year }}</span>
+          }
+          @if (book.edition_count) {
+            <span class="meta-separator">·</span>
+            <span class="meta-item">{{ book.edition_count }} ediciones</span>
+          }
+          @if (book.rating) {
+            <span class="meta-separator">·</span>
+            <span class="meta-item rating">
+              <span class="star">★</span>{{ ratingDisplay }}
+            </span>
+          }
+        </div>
+
+        <!-- Status badges -->
+        <div class="detail-badges">
+          @if (isRead && bookRating) {
+            <span class="badge badge-read">
+              {{ getRatingEmoji(bookRating) }} Leído — {{ getRatingLabel(bookRating) }}
+            </span>
+          } @else if (isSaved) {
+            <span class="badge badge-saved">
+              <span class="material-icons">bookmark</span> En tu lista
+            </span>
+          }
+        </div>
+
+        <!-- Gemini reason callout -->
+        <div class="detail-reason">
+          <span class="reason-icon">💡</span>
+          <blockquote class="reason-text">
+            {{ book.reason }}
+          </blockquote>
+        </div>
+
+        <!-- Description -->
+        @if (book.description) {
+          <div class="detail-description">
+            <h3 class="section-title">Sobre este libro</h3>
+            <p class="description-text">{{ book.description }}</p>
+          </div>
+        }
+
+        <!-- Subjects as chips -->
+        @if (allSubjects.length > 0) {
+          <div class="detail-subjects">
+            <h3 class="section-title">Géneros y temas</h3>
+            <div class="subjects-chips">
+              @for (subject of allSubjects; track subject) {
+                <span class="subject-chip">{{ subject }}</span>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Action buttons -->
+        <div class="detail-actions">
+          <button class="btn-primary" [class.is-saved]="isSaved" (click)="onSaveToggle()" type="button">
+            <span class="material-icons">{{ isSaved ? 'bookmark' : 'bookmark_border' }}</span>
+            {{ isSaved ? 'Guardado' : 'Quiero leerlo' }}
+          </button>
+
+          <button class="btn-secondary" (click)="onSimilarRequest()" type="button">
+            <span class="material-icons">refresh</span>
+            Más como este
+          </button>
+
+          <div class="icon-actions-row">
+            <button
+              class="btn-icon"
+              [class.is-read]="isRead"
+              (click)="onRead()"
+              [attr.aria-label]="isRead ? 'Cambiar valoración' : 'Marcar como leído'"
+              type="button"
+            >
+              <span class="material-icons">{{ isRead ? 'check_circle' : 'check_circle_outline' }}</span>
+              {{ isRead ? 'Cambiar valoración' : 'Ya lo leí' }}
+            </button>
+
+            <button
+              class="btn-icon btn-discard"
+              [class.is-discarded]="isDiscarded"
+              (click)="onDiscard()"
+              aria-label="No es para mí"
+              type="button"
+            >
+              <span class="material-icons">close</span>
+              No me interesa
+            </button>
+          </div>
+        </div>
+
+        <!-- Rating modal -->
+        @if (showRatingModal) {
+          <div class="rating-modal" role="dialog" aria-label="¿Qué te pareció el libro?">
+            <p class="rating-prompt">¿Qué te pareció?</p>
+            <div class="rating-options">
+              <button class="rating-opt" (click)="submitRating('loved')" type="button">
+                😍 <span>Me encantó</span>
+              </button>
+              <button class="rating-opt" (click)="submitRating('ok')" type="button">
+                🙂 <span>Estuvo bien</span>
+              </button>
+              <button class="rating-opt" (click)="submitRating('disliked')" type="button">
+                😕 <span>No me gustó</span>
+              </button>
+            </div>
+            <button class="rating-close" (click)="closeRatingModal()" type="button" aria-label="Cerrar">
+              <span class="material-icons">close</span>
+            </button>
+          </div>
+        }
+
+        <!-- External links -->
+        <div class="external-links">
+          @if (book.openlibrary_url) {
+            <a
+              [href]="book.openlibrary_url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="external-link"
+            >
+              Ver en OpenLibrary
+              <span class="material-icons">open_in_new</span>
+            </a>
+          }
+          @if (googleBooksUrl) {
+            <a
+              [href]="googleBooksUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="external-link"
+            >
+              Ver en Google Books
+              <span class="material-icons">open_in_new</span>
+            </a>
+          }
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>

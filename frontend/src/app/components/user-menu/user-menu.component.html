@@ -1,0 +1,55 @@
+<div class="user-menu-container">
+  <!-- Not authenticated -->
+  <ng-container *ngIf="!(isAuthenticated$ | async)">
+    <button mat-button (click)="onLogin()" class="login-button">
+      <mat-icon>account_circle</mat-icon>
+      <span>Iniciar sesión</span>
+    </button>
+  </ng-container>
+
+  <!-- Authenticated -->
+  <ng-container *ngIf="isAuthenticated$ | async">
+    <button mat-icon-button [matMenuTriggerFor]="userMenu" class="avatar-button">
+      <ng-container *ngIf="user$ | async as user">
+        <div class="avatar" [style.background]="'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'">
+          {{ getInitials(user) }}
+        </div>
+      </ng-container>
+    </button>
+
+    <mat-menu #userMenu="matMenu" class="user-menu">
+      <ng-container *ngIf="user$ | async as user">
+        <div class="user-info">
+          <div class="user-name">
+            {{ user.user_metadata['full_name'] || 'Usuario' }}
+          </div>
+          <div class="user-email">{{ user.email }}</div>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <button mat-menu-item routerLink="/biblioteca">
+          <mat-icon>bookmark</mat-icon>
+          <span>Mi biblioteca</span>
+        </button>
+
+        <button mat-menu-item routerLink="/historial">
+          <mat-icon>history</mat-icon>
+          <span>Historial</span>
+        </button>
+
+        <mat-divider></mat-divider>
+
+        <button mat-menu-item (click)="onClearData()">
+          <mat-icon>delete_outline</mat-icon>
+          <span>Borrar todos mis datos</span>
+        </button>
+
+        <button mat-menu-item (click)="onLogout()">
+          <mat-icon>exit_to_app</mat-icon>
+          <span>Cerrar sesión</span>
+        </button>
+      </ng-container>
+    </mat-menu>
+  </ng-container>
+</div>

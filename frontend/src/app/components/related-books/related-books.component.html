@@ -1,0 +1,62 @@
+<div class="related-books-section">
+  <!-- Header -->
+  <div class="related-header" (click)="toggleExpanded()">
+    <div class="related-title-wrapper">
+      <span class="related-icon">↻</span>
+      <h3 class="related-title">
+        Si te gusta <strong>{{ seedBook.title }}</strong>, también podrían gustarte:
+      </h3>
+    </div>
+    <div class="related-actions">
+      @if (isLoading) {
+        <span class="loading-text">Buscando...</span>
+      }
+      <button
+        class="btn-toggle"
+        [attr.aria-label]="expanded ? 'Colapsar' : 'Expandir'"
+        type="button"
+      >
+        <span class="material-icons">{{ expanded ? 'expand_less' : 'expand_more' }}</span>
+      </button>
+      <button class="btn-close" (click)="close(); $event.stopPropagation()" aria-label="Cerrar" type="button">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Content -->
+  @if (expanded) {
+    <div class="related-content" @expandCollapse>
+      @if (isLoading) {
+        <div class="related-loading">
+          <div class="spinner"></div>
+          <p>Encontrando libros similares...</p>
+        </div>
+      } @else if (books.length > 0) {
+        <div class="related-grid">
+          @for (book of books; track book.title) {
+            <app-book-card
+              [book]="book"
+              variant="discovery"
+              [isSaved]="isBookSaved(book)"
+              [isDiscarded]="isBookDiscarded(book)"
+              [isRead]="isBookRead(book)"
+              [bookRating]="getBookRating(book)"
+              (saved)="onSave($event)"
+              (unsaved)="onUnsave($event)"
+              (discarded)="onDiscard($event)"
+              (rated)="onRate($event)"
+              (cardClicked)="onCardClick($event)"
+              (similarRequested)="onSimilarRequested($event)"
+            />
+          }
+        </div>
+      } @else {
+        <div class="related-empty">
+          <span class="empty-icon">📚</span>
+          <p>No encontramos libros similares en este momento.</p>
+        </div>
+      }
+    </div>
+  }
+</div>

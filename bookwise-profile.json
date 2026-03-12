@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "created_at": "2026-03-12T21:41:07.079Z",
+  "updated_at": "2026-03-12T21:42:38.313Z",
+  "saved_books": [
+    {
+      "id": "OL16568759W",
+      "title": "Why Nations Fail",
+      "author": "Daron Acemoglu and James A. Robinson",
+      "cover_url": "https://covers.openlibrary.org/b/id/7253519-M.jpg",
+      "reason": "Propone una tesis fascinante sobre como las instituciones politicas inclusivas o extractivas definen el exito economico y la prosperidad de los paises.",
+      "saved_at": "2026-03-12T21:42:05.213Z",
+      "status": "read",
+      "rating": "ok"
+    },
+    {
+      "id": "OL16618086W",
+      "title": "The Price of Inequality",
+      "author": "Joseph E. Stiglitz",
+      "cover_url": "https://covers.openlibrary.org/b/id/9658674-M.jpg",
+      "reason": "Examina la interseccion entre la politica y la economia contemporanea, argumentando como la desigualdad es una eleccion politica mas que una necesidad economica.",
+      "saved_at": "2026-03-12T21:42:13.122Z",
+      "status": "want_to_read",
+      "rating": null
+    },
+    {
+      "id": "OL23200051W",
+      "title": "The Sleepwalkers",
+      "author": "Christopher Clark",
+      "cover_url": "https://covers.openlibrary.org/b/isbn/9780718192952-M.jpg",
+      "reason": "Relato detallado sobre como las decisiones politicas y la diplomacia fracturada de las potencias europeas llevaron al estallido de la Primera Guerra Mundial.",
+      "saved_at": "2026-03-12T21:42:36.080Z",
+      "status": "want_to_read",
+      "rating": null
+    },
+    {
+      "id": "OL1847023W",
+      "title": "The Worldly Philosophers",
+      "author": "Robert L. Heilbroner",
+      "cover_url": "https://covers.openlibrary.org/b/id/15106531-M.jpg",
+      "reason": "Una introduccion magistral a la historia del pensamiento economico a traves de las vidas y las ideas de los grandes economistas que dieron forma al mundo moderno.",
+      "saved_at": "2026-03-12T21:42:38.313Z",
+      "status": "want_to_read",
+      "rating": null
+    }
+  ],
+  "rejected_books": [],
+  "recommendation_history": [
+    {
+      "id": "d300c255-c555-485f-843e-ed635d28356f",
+      "timestamp": "2026-03-12T21:41:07.079Z",
+      "query": {
+        "purpose": "learn",
+        "mood": null,
+        "genres": [],
+        "length": null,
+        "language": null,
+        "freetext": "Me gusta la política, la historia, la economía",
+        "profile": null
+      },
+      "results_count": 8
+    }
+  ]
+}

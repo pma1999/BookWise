@@ -1,0 +1,217 @@
+<form class="discovery-form" (ngSubmit)="onSubmit()" novalidate [class.quick-mode]="isQuickMode">
+
+  <!-- ── Quick mode toggle ──────────────────────────── -->
+  <div class="form-mode-toggle">
+    <button
+      type="button"
+      class="mode-btn"
+      [class.active]="isQuickMode"
+      (click)="setMode('quick')"
+    >
+      <span class="material-icons">bolt</span>
+      Rápido
+    </button>
+    <button
+      type="button"
+      class="mode-btn"
+      [class.active]="isDetailedMode"
+      (click)="setMode('detailed')"
+    >
+      <span class="material-icons">tune</span>
+      Personalizado
+    </button>
+  </div>
+
+  <!-- ── Free text (hero input) ─────────────────────── -->
+  <div class="form-section freetext-section">
+    <label class="section-label freetext-label">
+      @if (isQuickMode) {
+        ¿Qué quieres leer?
+      } @else {
+        Describe lo que buscas
+      }
+    </label>
+    <div class="textarea-wrapper">
+      <textarea
+        class="freetext-input"
+        [(ngModel)]="freetext"
+        name="freetext"
+        [disabled]="disabled"
+        rows="3"
+        [placeholder]="isQuickMode ? 'Un thriller que me mantenga en vilo toda la noche...' : ''"
+        aria-label="Describe qué quieres leer"
+      ></textarea>
+      @if (!freetext && isDetailedMode) {
+        <div
+          class="fake-placeholder"
+          [class.fading]="placeholderFading"
+          aria-hidden="true"
+        >
+          {{ currentPlaceholder }}
+        </div>
+      }
+    </div>
+    @if (isQuickMode && canQuickSubmit) {
+      <p class="quick-hint">
+        <span class="material-icons">auto_awesome</span>
+        Analizaremos tu búsqueda para encontrar el mejor match
+      </p>
+    }
+  </div>
+
+  @if (isDetailedMode) {
+    <!-- ── Purpose (required) ─────────────────────────── -->
+  <div class="form-section">
+    <label class="section-label">
+      ¿Para qué quieres leer?
+      <span class="required-mark" aria-label="obligatorio">*</span>
+    </label>
+    <div class="purpose-grid" role="group" aria-label="Propósito de lectura" aria-required="true">
+      @for (opt of purposeOptions; track opt.value) {
+        <button
+          type="button"
+          class="purpose-card"
+          [class.selected]="selectedPurpose === opt.value"
+          [disabled]="disabled"
+          [attr.aria-pressed]="selectedPurpose === opt.value"
+          (click)="selectPurpose(opt.value)"
+        >
+          <span class="material-icons purpose-icon" aria-hidden="true">{{ opt.icon }}</span>
+          <span class="purpose-label">{{ opt.label }}</span>
+          <span class="purpose-desc">{{ opt.desc }}</span>
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- ── Mood (optional) ────────────────────────────── -->
+  <div class="form-section">
+    <label class="section-label">Mood <span class="optional-mark">(opcional)</span></label>
+    <div class="chips-row" role="group" aria-label="Mood deseado">
+      @for (opt of moodOptions; track opt.value) {
+        <button
+          type="button"
+          class="chip"
+          [class.selected]="selectedMood === opt.value"
+          [disabled]="disabled"
+          [attr.aria-pressed]="selectedMood === opt.value"
+          (click)="selectMood(opt.value)"
+        >
+          {{ opt.label }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- ── Genres (optional, max 3) ───────────────────── -->
+  <div class="form-section">
+    <label class="section-label">
+      Géneros
+      <span class="optional-mark">(hasta 3)</span>
+    </label>
+    <div class="chips-row chips-wrap" role="group" aria-label="Géneros preferidos">
+      @for (opt of genreOptions; track opt.value) {
+        <button
+          type="button"
+          class="chip"
+          [class.selected]="isGenreSelected(opt.value)"
+          [disabled]="disabled"
+          [attr.aria-pressed]="isGenreSelected(opt.value)"
+          (click)="toggleGenre(opt.value)"
+        >
+          {{ opt.label }}
+        </button>
+      }
+    </div>
+    @if (selectedGenres.length === 3) {
+      <p class="field-hint">Máximo 3 géneros. El más antiguo se sustituirá al elegir otro.</p>
+    }
+  </div>
+
+  <!-- ── Length (optional) ──────────────────────────── -->
+  <div class="form-section">
+    <label class="section-label">Extensión <span class="optional-mark">(opcional)</span></label>
+    <div class="chips-row" role="group" aria-label="Extensión del libro">
+      @for (opt of lengthOptions; track opt.value) {
+        <button
+          type="button"
+          class="chip chip-length"
+          [class.selected]="selectedLength === opt.value"
+          [disabled]="disabled"
+          [attr.aria-pressed]="selectedLength === opt.value"
+          (click)="selectLength(opt.value)"
+        >
+          <span class="chip-length-label">{{ opt.label }}</span>
+          <span class="chip-length-desc">{{ opt.desc }}</span>
+        </button>
+      }
+    </div>
+  </div>
+
+    <!-- ── Language (optional, behind toggle) ─────────── -->
+    <div class="form-section language-section">
+      <div class="language-toggle-row">
+        <label class="section-label toggle-label" for="lang-toggle">
+          Idioma original
+          <span class="optional-mark">(opcional)</span>
+        </label>
+        <mat-slide-toggle
+          id="lang-toggle"
+          [(ngModel)]="languageEnabled"
+          name="languageEnabled"
+          [disabled]="disabled"
+          color="primary"
+          aria-label="Filtrar por idioma original"
+        />
+      </div>
+      @if (languageEnabled) {
+        <mat-form-field appearance="outline" class="language-select">
+          <mat-label>Idioma</mat-label>
+          <mat-select
+            [(ngModel)]="selectedLanguage"
+            name="selectedLanguage"
+            [disabled]="disabled"
+          >
+            @for (opt of languageOptions; track opt.value) {
+              <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
+    </div>
+
+    <!-- ── Hint ───────────────────────────────────────── -->
+    @if (showHint) {
+      <div class="form-hint" role="status">
+        <span class="material-icons hint-icon" aria-hidden="true">lightbulb</span>
+        Cuanto más nos cuentes, mejores serán las recomendaciones
+      </div>
+    }
+  }
+
+  <!-- ── Submit ─────────────────────────────────────── -->
+  <div class="form-submit">
+    <button
+      type="submit"
+      class="btn-discover"
+      [disabled]="!canSubmit"
+      [attr.aria-busy]="disabled"
+    >
+      @if (disabled) {
+        <span class="material-icons btn-spinner" aria-hidden="true">autorenew</span>
+        Buscando...
+      } @else {
+        <span class="material-icons" aria-hidden="true">explore</span>
+        @if (isQuickMode) {
+          Buscar libros
+        } @else {
+          Descubrir libros
+        }
+      }
+    </button>
+    @if (isDetailedMode && !selectedPurpose) {
+      <p class="submit-hint">Selecciona un propósito para empezar</p>
+    }
+  </div>
+
+</form>

@@ -1,0 +1,76 @@
+<div class="biblioteca-page">
+  <div class="page-header">
+    <h1>Mi Biblioteca</h1>
+    <a routerLink="/" class="back-link">← Descubrir</a>
+  </div>
+
+  @if (isEmpty) {
+    <div class="empty-state">
+      <p>Aún no tienes libros guardados.</p>
+      <a routerLink="/" class="btn-discover">Descubrir libros</a>
+    </div>
+  }
+
+  @if (wantToRead.length > 0) {
+    <section class="library-section">
+      <h2 class="section-title">
+        <span class="section-ornament">§</span>
+        Quiero leer
+        <span class="section-count">{{ wantToRead.length }}</span>
+      </h2>
+      <div class="books-grid">
+        @for (book of wantToRead; track book.id ?? book.title) {
+          <app-book-card
+            [book]="toBook(book)"
+            variant="library"
+            [isSaved]="true"
+            [isRead]="false"
+            (unsaved)="onUnsave($event)"
+            (rated)="onChangeRating($event)"
+            (similarRequested)="onSimilarRequested($event)"
+          />
+        }
+      </div>
+    </section>
+  }
+
+  @if (read.length > 0) {
+    <section class="library-section">
+      <h2 class="section-title">
+        <span class="section-ornament">§</span>
+        Leídos
+        <span class="section-count">{{ read.length }}</span>
+      </h2>
+      <div class="rating-filters">
+        @for (opt of ratingFilterOptions; track opt.value) {
+          <button
+            class="filter-pill"
+            [class.active]="ratingFilter === opt.value"
+            (click)="setFilter(opt.value)"
+            type="button"
+          >
+            {{ opt.label }}
+          </button>
+        }
+      </div>
+      @if (filteredRead.length > 0) {
+        <div class="books-grid">
+          @for (book of filteredRead; track book.id ?? book.title) {
+            <app-book-card
+              [book]="toBook(book)"
+              variant="library"
+              [isSaved]="true"
+              [isRead]="true"
+              [bookRating]="book.rating"
+              (unsaved)="onUnsave($event)"
+              (rated)="onChangeRating($event)"
+              (similarRequested)="onSimilarRequested($event)"
+            />
+          }
+        </div>
+      } @else {
+        <p class="filter-empty">No hay libros con esa valoración.</p>
+      }
+    </section>
+  }
+</div>

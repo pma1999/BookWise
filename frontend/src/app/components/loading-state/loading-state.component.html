@@ -1,0 +1,32 @@
+<div class="loading-wrapper" aria-live="polite" aria-label="Cargando recomendaciones">
+
+  <div class="loading-hero">
+    <div class="loading-spinner" aria-hidden="true">
+      <div class="spinner-ring"></div>
+      <span class="spinner-icon">📚</span>
+    </div>
+
+    <h2 class="loading-title">Buscando tu próxima lectura...</h2>
+
+    <p class="loading-message" [class.fading]="isFading" aria-live="polite">
+      {{ currentMessage }}
+    </p>
+  </div>
+
+  <!-- Skeleton preview -->
+  <div class="skeleton-grid" aria-hidden="true">
+    @for (sk of skeletons; track $index) {
+      <div class="skeleton-card">
+        <div class="skeleton skeleton-cover"></div>
+        <div class="skeleton-body">
+          <div class="skeleton skeleton-line title-line"></div>
+          <div class="skeleton skeleton-line author-line"></div>
+          <div class="skeleton skeleton-line meta-line"></div>
+          <div class="skeleton skeleton-reason"></div>
+          <div class="skeleton skeleton-line action-line"></div>
+        </div>
+      </div>
+    }
+  </div>
+
+</div>

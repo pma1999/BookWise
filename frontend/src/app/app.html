@@ -1,0 +1,30 @@
+<header class="app-header">
+  <div class="header-content">
+    <a routerLink="/" class="brand">
+      <span class="brand-icon" aria-hidden="true">❧</span>
+      <span class="brand-name">BookWise</span>
+    </a>
+    <nav class="header-nav">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">Descubrir</a>
+      <a routerLink="/biblioteca" routerLinkActive="active" class="nav-link">Mi Biblioteca</a>
+      <a routerLink="/historial" routerLinkActive="active" class="nav-link">Historial</a>
+    </nav>
+    <div class="header-actions">
+      <app-user-menu />
+      <button class="btn-settings" (click)="toggleSettings()" aria-label="Ajustes" type="button">
+        <span class="material-icons">settings</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+@if (settingsOpen) {
+  <div class="settings-overlay" (click)="closeSettings()" aria-hidden="true"></div>
+  <div class="settings-panel-wrapper">
+    <app-settings-panel (closed)="closeSettings()" (dataCleared)="onDataCleared()" />
+  </div>
+}
+
+<main class="app-main">
+  <router-outlet />
+</main>

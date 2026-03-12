@@ -1,0 +1,147 @@
+<div class="settings-panel">
+  <div class="panel-header">
+    <h2>Ajustes</h2>
+    <button class="btn-close" (click)="closed.emit()" aria-label="Cerrar ajustes" type="button">
+      <span class="material-icons">close</span>
+    </button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="panel-tabs">
+    <button
+      class="tab-btn"
+      [class.active]="activeTab === 'data'"
+      (click)="activeTab = 'data'"
+      type="button"
+    >
+      <span class="material-icons">save</span>
+      Datos
+    </button>
+    <button
+      class="tab-btn"
+      [class.active]="activeTab === 'account'"
+      (click)="activeTab = 'account'"
+      type="button"
+    >
+      <span class="material-icons">account_circle</span>
+      Cuenta
+    </button>
+  </div>
+
+  <div class="panel-body">
+    <!-- Datos tab -->
+    @if (activeTab === 'data') {
+      <!-- Export/Import section -->
+      <div class="panel-section">
+        <h3>Exportar / Importar</h3>
+
+        <button class="panel-btn" (click)="onExport()" type="button">
+          <span class="material-icons">download</span>
+          Exportar perfil
+        </button>
+
+        <label class="file-label" for="import-file">
+          <span class="material-icons">upload</span>
+          Importar perfil
+        </label>
+        <input
+          id="import-file"
+          class="file-input"
+          type="file"
+          accept=".json"
+          (change)="onFileSelected($event)"
+        />
+
+        @if (importPreview) {
+          <div class="import-preview">
+            <p>Se importarán {{ importPreview.savedCount }} libros guardados y {{ importPreview.rejectedCount }} rechazados. ¿Continuar?</p>
+            <div class="import-actions">
+              <button class="btn-confirm" (click)="confirmImport()" type="button">Confirmar</button>
+              <button class="btn-cancel" (click)="cancelImport()" type="button">Cancelar</button>
+            </div>
+          </div>
+        }
+
+        @if (importError) {
+          <p class="import-error">{{ importError }}</p>
+        }
+      </div>
+
+      <hr class="panel-divider" />
+
+      <!-- Privacidad section -->
+      <div class="panel-section">
+        <h3>Privacidad</h3>
+
+        @if (deleteStep === 'idle') {
+          <button class="panel-btn btn-danger" (click)="startDelete()" type="button">
+            <span class="material-icons">delete_forever</span>
+            Borrar todos mis datos
+          </button>
+        }
+
+        @if (deleteStep === 'confirming') {
+          <div class="delete-confirm">
+            <input
+              class="delete-input"
+              type="text"
+              [(ngModel)]="deleteConfirmValue"
+              placeholder="Escribe BORRAR para confirmar"
+              autocomplete="off"
+            />
+            <div class="delete-actions">
+              <button
+                class="panel-btn btn-danger"
+                (click)="confirmDelete()"
+                [disabled]="!canConfirmDelete"
+                type="button"
+              >
+                <span class="material-icons">delete_forever</span>
+                Confirmar borrado
+              </button>
+              <button class="btn-cancel" (click)="cancelDelete()" type="button">Cancelar</button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Account tab -->
+    @if (activeTab === 'account') {
+      @if (isAuthenticated) {
+        <!-- Logged in state -->
+        <div class="panel-section">
+          <h3>Tu cuenta</h3>
+
+          <div class="user-info">
+            @if (userName) {
+              <div class="user-name">{{ userName }}</div>
+            }
+            <div class="user-email">{{ userEmail }}</div>
+          </div>
+
+          <hr class="panel-divider" />
+
+          <button class="panel-btn btn-danger" (click)="onLogout()" type="button">
+            <span class="material-icons">exit_to_app</span>
+            Cerrar sesión
+          </button>
+        </div>
+      } @else {
+        <!-- Logged out state -->
+        <div class="panel-section">
+          <h3>Tu cuenta</h3>
+
+          <p class="account-description">
+            Inicia sesión para sincronizar tus libros y configuraciones en todos tus dispositivos.
+          </p>
+
+          <button class="panel-btn btn-primary" routerLink="/auth" (click)="onLogin()" type="button">
+            <span class="material-icons">account_circle</span>
+            Iniciar sesión o crear cuenta
+          </button>
+        </div>
+      }
+    }
+  </div>
+</div>

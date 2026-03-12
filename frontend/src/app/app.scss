@@ -1,0 +1,152 @@
+.app-header {
+  background: var(--bw-surface);
+  border-bottom: 1px solid var(--bw-border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.4);
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(200, 146, 42, 0.35) 30%,
+      rgba(200, 146, 42, 0.35) 70%,
+      transparent
+    );
+  }
+
+  .header-content {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .brand-icon {
+    font-size: 1.4rem;
+    line-height: 1;
+    color: var(--bw-primary);
+    opacity: 0.85;
+    font-style: normal;
+  }
+
+  .brand-name {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--bw-text-primary);
+    letter-spacing: 0.04em;
+  }
+
+  .header-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .nav-link {
+    padding: 0.5rem 0.875rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--bw-text-secondary);
+    transition: color 0.15s, background 0.15s;
+
+    &:hover {
+      color: var(--bw-text-primary);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    &.active {
+      color: var(--bw-primary);
+      background: rgba(200, 146, 42, 0.1);
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+  }
+
+  .btn-settings {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--bw-text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+
+    .material-icons {
+      font-size: 1.375rem;
+    }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--bw-text-primary);
+    }
+  }
+}
+
+.app-main {
+  min-height: calc(100vh - 68px);
+}
+
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 200;
+  animation: fadeIn 0.2s ease;
+}
+
+.settings-panel-wrapper {
+  position: fixed;
+  top: 68px;
+  right: 0;
+  z-index: 201;
+  animation: slideDown 0.2s ease;
+  padding: 0.5rem;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+  .app-header {
+    .nav-link {
+      padding: 0.5rem 0.5rem;
+      font-size: 0.8125rem;
+    }
+  }
+}

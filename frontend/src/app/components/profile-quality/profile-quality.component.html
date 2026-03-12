@@ -1,0 +1,14 @@
+<div class="profile-quality-widget" [class]="colorClass">
+  <div class="quality-header">
+    <span class="quality-icon">{{ currentLevel.icon }}</span>
+    <div class="quality-info">
+      <h3 class="quality-label">{{ currentLevel.label }}</h3>
+      <p class="quality-description">{{ currentLevel.description }}</p>
+    </div>
+    <span class="quality-count">{{ ratingCount }} valoraciones</span>
+  </div>
+
+  <div class="quality-progress">
+    <div class="progress-bar" [style.background]="progressGradient"></div>
+  </div>
+</div>

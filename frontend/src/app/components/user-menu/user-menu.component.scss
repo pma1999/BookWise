@@ -1,0 +1,47 @@
+.user-menu-container {
+  display: flex;
+  align-items: center;
+}
+
+.login-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.avatar-button {
+  padding: 0;
+  overflow: hidden;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+::ng-deep .user-menu {
+  min-width: 220px;
+
+  .user-info {
+    padding: 12px 16px;
+    background: #f5f5f5;
+  }
+
+  .user-name {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+  }
+
+  .user-email {
+    font-size: 12px;
+    color: #666;
+  }
+}

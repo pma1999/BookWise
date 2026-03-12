@@ -1,0 +1,48 @@
+<div class="historial-page">
+  <header class="historial-header">
+    <h1 class="page-title">Historial de búsquedas</h1>
+    <p class="page-subtitle">Tus últimas búsquedas guardadas</p>
+  </header>
+
+  @if (history.length > 0) {
+    <div class="historial-list">
+      @for (entry of history; track entry.id) {
+        <a
+          class="historial-entry"
+          routerLink="/"
+          (click)="onEntryClick(entry)"
+        >
+          <div class="entry-main">
+            <div class="entry-summary">{{ entry.summary }}</div>
+            <div class="entry-results">
+              {{ entry.resultsCount }} resultado{{ entry.resultsCount !== 1 ? 's' : '' }}
+            </div>
+          </div>
+          <div class="entry-meta">
+            <time class="entry-time" [attr.datetime]="entry.date.toISOString()">
+              {{ entry.timeAgo }}
+            </time>
+            <span class="entry-action">Usar filtros →</span>
+          </div>
+        </a>
+      }
+    </div>
+
+    <div class="historial-actions">
+      <button class="btn-clear" (click)="clearHistory()" type="button">
+        <span class="material-icons">delete_outline</span>
+        Borrar historial
+      </button>
+    </div>
+  } @else {
+    <div class="empty-state">
+      <span class="empty-icon">📚</span>
+      <h2 class="empty-title">Sin historial</h2>
+      <p class="empty-text">
+        Aún no has realizado ninguna búsqueda. Cuando descubras libros,
+        aparecerán aquí.
+      </p>
+      <a routerLink="/" class="btn-primary">Descubrir libros</a>
+    </div>
+  }
+</div>

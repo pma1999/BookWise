@@ -1,0 +1,335 @@
+:host {
+  display: block;
+}
+
+.settings-panel {
+  width: 380px;
+  max-width: calc(100vw - 2rem);
+  background: var(--bw-surface);
+  border: 1px solid rgba(200, 146, 42, 0.35);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem 1rem;
+  border-bottom: 1px solid var(--bw-border);
+
+  h2 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.375rem;
+    font-weight: 600;
+    color: var(--bw-text-primary);
+    letter-spacing: 0.03em;
+  }
+
+  .btn-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--bw-text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--bw-text-primary);
+    }
+
+    .material-icons {
+      font-size: 1.125rem;
+    }
+  }
+}
+
+.panel-body {
+  padding: 1.25rem 1.5rem;
+}
+
+.panel-section {
+  h3 {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--bw-text-secondary);
+    margin-bottom: 1rem;
+  }
+}
+
+.panel-divider {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(200, 146, 42, 0.3) 30%, rgba(200, 146, 42, 0.3) 70%, transparent);
+  margin: 1.25rem 0;
+}
+
+.panel-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border-radius: 8px;
+  border: 1px solid var(--bw-border);
+  background: transparent;
+  color: var(--bw-text-primary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s;
+
+  .material-icons {
+    font-size: 1.1rem;
+    color: var(--bw-primary);
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(200, 146, 42, 0.4);
+  }
+
+  &.btn-danger {
+    color: var(--bw-error, #e05252);
+    border-color: rgba(224, 82, 82, 0.3);
+
+    .material-icons {
+      color: var(--bw-error, #e05252);
+    }
+
+    &:hover:not(:disabled) {
+      background: rgba(224, 82, 82, 0.08);
+      border-color: rgba(224, 82, 82, 0.5);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.file-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border-radius: 8px;
+  border: 1px solid var(--bw-border);
+  background: transparent;
+  color: var(--bw-text-primary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s;
+  margin-top: 0.5rem;
+  box-sizing: border-box;
+
+  .material-icons {
+    font-size: 1.1rem;
+    color: var(--bw-primary);
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(200, 146, 42, 0.4);
+  }
+}
+
+.file-input {
+  display: none;
+}
+
+.import-preview {
+  margin-top: 0.75rem;
+  padding: 0.875rem;
+  border: 1px solid rgba(200, 146, 42, 0.35);
+  border-radius: 8px;
+  background: rgba(200, 146, 42, 0.06);
+
+  p {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1rem;
+    color: var(--bw-text-primary);
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+  }
+
+  .import-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+}
+
+.btn-confirm {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--bw-primary);
+  background: var(--bw-primary);
+  color: #1a1208;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 0.85;
+  }
+}
+
+.btn-cancel {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--bw-border);
+  background: transparent;
+  color: var(--bw-text-secondary);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+}
+
+.import-error {
+  margin-top: 0.625rem;
+  font-size: 0.8125rem;
+  color: var(--bw-error, #e05252);
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  background: rgba(224, 82, 82, 0.08);
+  border: 1px solid rgba(224, 82, 82, 0.2);
+}
+
+.delete-confirm {
+  margin-top: 0.75rem;
+
+  .delete-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    border: 1px solid var(--bw-border);
+    background: rgba(0, 0, 0, 0.25);
+    color: var(--bw-text-primary);
+    font-size: 0.875rem;
+    outline: none;
+    box-sizing: border-box;
+    margin-bottom: 0.625rem;
+
+    &::placeholder {
+      color: var(--bw-text-secondary);
+      font-size: 0.8125rem;
+    }
+
+    &:focus {
+      border-color: rgba(200, 146, 42, 0.5);
+    }
+  }
+
+  .delete-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+}
+
+// Tabs
+.panel-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--bw-border);
+
+  .tab-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.875rem;
+    background: transparent;
+    border: none;
+    color: var(--bw-text-secondary);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s;
+    position: relative;
+
+    .material-icons {
+      font-size: 1.1rem;
+    }
+
+    &:hover {
+      color: var(--bw-text-primary);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    &.active {
+      color: var(--bw-primary);
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--bw-primary);
+      }
+    }
+  }
+}
+
+// User info in account tab
+.user-info {
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid var(--bw-border);
+  margin-bottom: 1rem;
+
+  .user-name {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--bw-text-primary);
+    margin-bottom: 0.25rem;
+  }
+
+  .user-email {
+    font-size: 0.8125rem;
+    color: var(--bw-text-secondary);
+  }
+}
+
+.account-description {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1rem;
+  color: var(--bw-text-secondary);
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+// Primary button variant
+.panel-btn.btn-primary {
+  background: var(--bw-primary);
+  color: #1a1208;
+  border-color: var(--bw-primary);
+
+  .material-icons {
+    color: #1a1208;
+  }
+
+  &:hover {
+    opacity: 0.9;
+  }
+}

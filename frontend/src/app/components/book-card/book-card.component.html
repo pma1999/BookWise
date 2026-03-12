@@ -1,0 +1,170 @@
+<article class="book-card" [class.discarded]="isDiscarded" [class.read]="isRead" (click)="onCardClick()">
+
+  <!-- Cover -->
+  <div class="card-cover">
+    @if (book.cover_url) {
+      <img
+        [src]="book.cover_url"
+        [alt]="'Portada de ' + book.title"
+        loading="lazy"
+        class="cover-img"
+      />
+    } @else {
+      <div
+        class="cover-placeholder"
+        [style.background]="getPlaceholderGradient(book.title)"
+        aria-hidden="true"
+      >
+        <span class="cover-initials">{{ getInitials(book.title) }}</span>
+      </div>
+    }
+    @if (isRead && bookRating) {
+      <div class="read-badge" [attr.aria-label]="'Valoración: ' + bookRating">
+        {{ bookRating === 'loved' ? '😍' : bookRating === 'ok' ? '🙂' : '😕' }}
+      </div>
+    }
+  </div>
+
+  <!-- Content -->
+  <div class="card-content">
+
+    <div class="card-meta-top">
+      <h3 class="book-title">{{ book.title }}</h3>
+      <p class="book-author">{{ book.author }}</p>
+
+      <div class="book-meta">
+        @if (book.year) {
+          <span class="meta-item">{{ book.year }}</span>
+        }
+        @if (book.edition_count) {
+          <span class="meta-separator">·</span>
+          <span class="meta-item">{{ book.edition_count }} ediciones</span>
+        }
+        @if (book.rating) {
+          <span class="meta-separator">·</span>
+          <span class="meta-item rating">
+            <span class="star">★</span>{{ book.rating | number:'1.1-1' }}
+          </span>
+        }
+      </div>
+
+      @if (visibleSubjects.length > 0) {
+        <div class="subjects" aria-label="Géneros">
+          @for (subject of visibleSubjects; track subject) {
+            <span class="subject-chip">{{ subject }}</span>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Gemini reason — the most important text -->
+    @if (variant === 'discovery') {
+      <blockquote class="reason">
+        <span class="reason-icon" aria-hidden="true">💡</span>
+        {{ book.reason }}
+      </blockquote>
+    }
+
+    <!-- Actions: discovery variant -->
+    @if (variant === 'discovery') {
+      <div class="card-actions">
+        <button class="btn-save" [class.is-saved]="isSaved" (click)="onSaveToggle($event)"
+          [attr.aria-label]="isSaved ? 'Quitar de lista de lectura' : 'Añadir a lista de lectura'"
+          [attr.aria-pressed]="isSaved" type="button">
+          <span class="material-icons" aria-hidden="true">{{ isSaved ? 'bookmark' : 'bookmark_border' }}</span>
+          {{ isSaved ? 'Guardado' : 'Quiero leerlo' }}
+        </button>
+        <div class="icon-actions">
+          <button
+            class="btn-icon btn-similar"
+            (click)="onSimilar($event)"
+            [disabled]="loadingSimilar"
+            aria-label="Más como este"
+            title="Más como este"
+            type="button"
+          >
+            @if (loadingSimilar) {
+              <span class="material-icons spinning" aria-hidden="true">refresh</span>
+            } @else {
+              <span class="material-icons" aria-hidden="true">refresh</span>
+            }
+          </button>
+          <button class="btn-icon btn-discard" [class.is-discarded]="isDiscarded"
+            (click)="onDiscard($event)" aria-label="No es para mí" title="No es para mí" type="button">
+            <span class="material-icons" aria-hidden="true">close</span>
+          </button>
+          <button class="btn-icon btn-read" [class.is-read]="isRead" (click)="onRead($event)"
+            [attr.aria-label]="isRead ? 'Cambiar valoración' : 'Marcar como leído'"
+            [attr.title]="isRead ? 'Cambiar valoración' : 'Ya lo leí'" type="button">
+            <span class="material-icons" aria-hidden="true">{{ isRead ? 'check_circle' : 'check_circle_outline' }}</span>
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Actions: library variant -->
+    @if (variant === 'library') {
+      <div class="card-actions">
+        <button class="btn-icon btn-similar"
+          (click)="onSimilar($event)"
+          [disabled]="loadingSimilar"
+          aria-label="Más como este"
+          title="Más como este"
+          type="button"
+        >
+          @if (loadingSimilar) {
+            <span class="material-icons spinning" aria-hidden="true">refresh</span>
+          } @else {
+            <span class="material-icons" aria-hidden="true">refresh</span>
+          }
+          Más como este
+        </button>
+        <button class="btn-icon btn-read" [class.is-read]="isRead" (click)="onRead($event)"
+          [attr.aria-label]="isRead ? 'Cambiar valoración' : 'Marcar como leído'"
+          [attr.title]="isRead ? 'Cambiar valoración' : 'Ya lo leí'" type="button">
+          <span class="material-icons" aria-hidden="true">{{ isRead ? 'check_circle' : 'check_circle_outline' }}</span>
+          {{ isRead ? 'Cambiar valoración' : 'Ya lo leí' }}
+        </button>
+        <button class="btn-icon btn-discard"
+          (click)="onSaveToggle($event)" aria-label="Quitar de la lista" title="Quitar de la lista" type="button">
+          <span class="material-icons" aria-hidden="true">bookmark_remove</span>
+        </button>
+      </div>
+    }
+
+    <!-- Rating mini-modal -->
+    @if (showRatingModal) {
+      <div class="rating-modal" role="dialog" aria-label="¿Qué te pareció el libro?">
+        <p class="rating-prompt">¿Qué te pareció?</p>
+        <div class="rating-options">
+          <button class="rating-opt" (click)="submitRating('loved')" type="button">
+            😍 <span>Me encantó</span>
+          </button>
+          <button class="rating-opt" (click)="submitRating('ok')" type="button">
+            🙂 <span>Estuvo bien</span>
+          </button>
+          <button class="rating-opt" (click)="submitRating('disliked')" type="button">
+            😕 <span>No me gustó</span>
+          </button>
+        </div>
+        <button class="rating-close" (click)="closeRatingModal()" type="button" aria-label="Cerrar">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+    }
+
+    <!-- OpenLibrary link -->
+    @if (book.openlibrary_url) {
+      <a
+        [href]="book.openlibrary_url"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="ol-link"
+      >
+        Ver en OpenLibrary
+        <span class="material-icons ol-link-icon" aria-hidden="true">open_in_new</span>
+      </a>
+    }
+
+  </div>
+</article>

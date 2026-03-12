@@ -1,0 +1,22 @@
+<section class="results-section" aria-label="Resultados de recomendación">
+  <div class="results-header">
+    <h2 class="results-title">Tus recomendaciones</h2>
+    <span class="results-count">{{ books.length }} libro{{ books.length !== 1 ? 's' : '' }}</span>
+  </div>
+
+  <div class="books-grid">
+    @for (book of books; track trackBook($index, book)) {
+      <app-book-card
+        [book]="book"
+        [isSaved]="isSaved(book)"
+        [isDiscarded]="isDiscarded(book)"
+        [isRead]="isRead(book)"
+        [bookRating]="getRating(book)"
+        (saved)="saved.emit($event)"
+        (unsaved)="unsaved.emit($event)"
+        (discarded)="discarded.emit($event)"
+        (rated)="rated.emit($event)"
+      />
+    }
+  </div>
+</section>
