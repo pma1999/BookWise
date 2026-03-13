@@ -73,7 +73,8 @@
   margin: 1.25rem 0;
 }
 
-.panel-btn {
+.panel-btn,
+.file-label {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -97,7 +98,14 @@
     background: rgba(255, 255, 255, 0.04);
     border-color: rgba(200, 146, 42, 0.4);
   }
+}
 
+.file-label {
+  margin-top: 0.5rem;
+  box-sizing: border-box;
+}
+
+.panel-btn {
   &.btn-danger {
     color: var(--bw-error, #e05252);
     border-color: rgba(224, 82, 82, 0.3);
@@ -115,34 +123,6 @@
       opacity: 0.5;
       cursor: not-allowed;
     }
-  }
-}
-
-.file-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  width: 100%;
-  padding: 0.625rem 0.875rem;
-  border-radius: 8px;
-  border: 1px solid var(--bw-border);
-  background: transparent;
-  color: var(--bw-text-primary);
-  font-size: 0.875rem;
-  cursor: pointer;
-  text-align: left;
-  transition: background 0.15s, border-color 0.15s;
-  margin-top: 0.5rem;
-  box-sizing: border-box;
-
-  .material-icons {
-    font-size: 1.1rem;
-    color: var(--bw-primary);
-  }
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(200, 146, 42, 0.4);
   }
 }
 
@@ -244,7 +224,6 @@
   }
 }
 
-// Tabs
 .panel-tabs {
   display: flex;
   border-bottom: 1px solid var(--bw-border);
@@ -289,7 +268,6 @@
   }
 }
 
-// User info in account tab
 .user-info {
   padding: 1rem;
   background: rgba(255, 255, 255, 0.03);
@@ -319,7 +297,6 @@
   margin-bottom: 1rem;
 }
 
-// Primary button variant
 .panel-btn.btn-primary {
   background: var(--bw-primary);
   color: #1a1208;
@@ -338,8 +315,6 @@
     cursor: not-allowed;
   }
 }
-
-// ── API Key tab ──────────────────────────────────────────────
 
 .tab-badge {
   display: inline-flex;
