@@ -1,12 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, Subject, firstValueFrom } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 
 import { AuthService } from './auth.service';
 import { SupabaseService } from './supabase.service';
-import { environment } from '../../environments/environment';
 
-const API_BASE = (environment.apiUrl || 'http://localhost:5000') + '/api';
 const LS_KEY = 'bookwise_gemini_api_key';
 
 export interface ApiKeyStatus {
@@ -19,103 +16,128 @@ export class ApiKeyService {
   private statusSubject = new BehaviorSubject<ApiKeyStatus>({ hasKey: false, hint: null });
   private openSettingsSubject = new Subject<void>();
 
+  /** In-memory cache for authenticated users — cleared on logout. */
+  private _cachedKey: string | null = null;
+
   readonly status$ = this.statusSubject.asObservable();
-  /** Emit to request that the settings panel opens on the API key tab. */
+  /** Emit to request the settings panel to open on the API key tab. */
   readonly openSettingsRequested$ = this.openSettingsSubject.asObservable();
 
   constructor(
-    private http: HttpClient,
     private auth: AuthService,
     private supabase: SupabaseService,
   ) {
-    // Re-evaluate key status whenever auth state changes
     this.auth.authState$.subscribe(state => {
       if (state.isLoading) return;
-      if (state.isAuthenticated) {
-        this.loadKeyStatus();
+
+      if (state.isAuthenticated && state.user) {
+        // Load key from Supabase DB (once per session)
+        this._loadKeyFromDB(state.user.id);
       } else {
+        // Clear the in-memory cache and reflect guest localStorage state
+        this._cachedKey = null;
         this._refreshGuestStatus();
       }
     });
   }
 
-  /** Current snapshot of key status. */
+  /** Current snapshot (synchronous). */
   getStatus(): ApiKeyStatus {
     return this.statusSubject.value;
   }
 
   /**
-   * Save the API key.
-   *  - Authenticated users: encrypted + stored in backend DB
-   *  - Guest users: stored in localStorage
+   * Return headers to attach to every recommendation request.
+   * Synchronous — the key is always cached in memory after initial load.
+   *
+   *  Auth users  → { 'X-Gemini-Api-Key': <key from DB, cached> }
+   *  Guest users → { 'X-Gemini-Api-Key': <key from localStorage> }
+   */
+  getApiHeaders(): Record<string, string> {
+    const key = this.auth.getCurrentUser()
+      ? this._cachedKey
+      : localStorage.getItem(LS_KEY);
+
+    return key ? { 'X-Gemini-Api-Key': key } : {};
+  }
+
+  /**
+   * Save the user's Gemini API key.
+   *  - Auth users: upsert to Supabase user_api_keys table (RLS-protected), update cache.
+   *  - Guests: store in localStorage.
    */
   async saveKey(apiKey: string): Promise<void> {
     const trimmed = apiKey.trim();
     if (!trimmed) throw new Error('La clave de API no puede estar vacía.');
 
-    if (this.auth.getCurrentUser()) {
-      const token = await this._getAccessToken();
-      if (!token) throw new Error('No se pudo obtener el token de autenticación.');
-
-      const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-      const resp = await firstValueFrom(
-        this.http.post<{ hint: string }>(`${API_BASE}/user/api-key`, { api_key: trimmed }, { headers })
-      );
-      this.statusSubject.next({ hasKey: true, hint: resp.hint });
+    const user = this.auth.getCurrentUser();
+    if (user) {
+      const { error } = await this.supabase.getClient()
+        .from('user_api_keys')
+        .upsert(
+          { user_id: user.id, api_key: trimmed, updated_at: new Date().toISOString() },
+          { onConflict: 'user_id' },
+        );
+      if (error) throw new Error(error.message);
+      this._cachedKey = trimmed;
     } else {
       localStorage.setItem(LS_KEY, trimmed);
-      this.statusSubject.next({ hasKey: true, hint: this._makeHint(trimmed) });
     }
+
+    this.statusSubject.next({ hasKey: true, hint: this._makeHint(trimmed) });
   }
 
   /**
    * Delete the stored API key.
-   *  - Authenticated users: removed from backend DB
-   *  - Guest users: removed from localStorage
+   *  - Auth users: delete from Supabase, clear cache.
+   *  - Guests: remove from localStorage.
    */
   async deleteKey(): Promise<void> {
-    if (this.auth.getCurrentUser()) {
-      const token = await this._getAccessToken();
-      if (!token) throw new Error('No se pudo obtener el token de autenticación.');
-
-      const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-      await firstValueFrom(
-        this.http.delete(`${API_BASE}/user/api-key`, { headers, responseType: 'text' })
-      );
+    const user = this.auth.getCurrentUser();
+    if (user) {
+      const { error } = await this.supabase.getClient()
+        .from('user_api_keys')
+        .delete()
+        .eq('user_id', user.id);
+      if (error) throw new Error(error.message);
+      this._cachedKey = null;
     } else {
       localStorage.removeItem(LS_KEY);
     }
+
     this.statusSubject.next({ hasKey: false, hint: null });
   }
 
-  /**
-   * Build the HTTP headers to attach to every recommendation request.
-   *  - Authenticated users: `Authorization: Bearer <supabase_jwt>` (backend decrypts key)
-   *  - Guest users: `X-Gemini-Api-Key: <plaintext>` (key from localStorage)
-   */
-  async getApiHeaders(): Promise<Record<string, string>> {
-    if (this.auth.getCurrentUser()) {
-      const token = await this._getAccessToken();
-      return token ? { Authorization: `Bearer ${token}` } : {};
-    }
-    const key = localStorage.getItem(LS_KEY);
-    return key ? { 'X-Gemini-Api-Key': key } : {};
+  /** Request the settings panel to open on the API key tab. */
+  requestOpenSettings(): void {
+    this.openSettingsSubject.next();
   }
 
-  /** Fetch key status from backend for the authenticated user. */
-  async loadKeyStatus(): Promise<void> {
+  // ── Private ──────────────────────────────────────────────
+
+  private async _loadKeyFromDB(userId: string): Promise<void> {
     try {
-      const token = await this._getAccessToken();
-      if (!token) {
+      const { data, error } = await this.supabase.getClient()
+        .from('user_api_keys')
+        .select('api_key')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('[ApiKey] Error loading key from DB:', error.message);
         this.statusSubject.next({ hasKey: false, hint: null });
         return;
       }
-      const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-      const resp = await firstValueFrom(
-        this.http.get<{ has_key: boolean; hint: string | null }>(`${API_BASE}/user/api-key/status`, { headers })
-      );
-      this.statusSubject.next({ hasKey: resp.has_key, hint: resp.hint });
-    } catch {
+
+      if (data?.api_key) {
+        this._cachedKey = data.api_key;
+        this.statusSubject.next({ hasKey: true, hint: this._makeHint(data.api_key) });
+      } else {
+        this._cachedKey = null;
+        this.statusSubject.next({ hasKey: false, hint: null });
+      }
+    } catch (err) {
+      console.error('[ApiKey] Unexpected error loading key:', err);
       this.statusSubject.next({ hasKey: false, hint: null });
     }
   }
@@ -126,16 +148,6 @@ export class ApiKeyService {
       hasKey: !!key,
       hint: key ? this._makeHint(key) : null,
     });
-  }
-
-  private async _getAccessToken(): Promise<string | null> {
-    const { data: { session } } = await this.supabase.getAuth().getSession();
-    return session?.access_token ?? null;
-  }
-
-  /** Request the settings panel to open on the API key tab. */
-  requestOpenSettings(): void {
-    this.openSettingsSubject.next();
   }
 
   private _makeHint(key: string): string {

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { Observable, throwError, TimeoutError, from, switchMap } from 'rxjs';
+import { Observable, throwError, TimeoutError } from 'rxjs';
 import { timeout, catchError } from 'rxjs/operators';
 
 import { RecommendationRequest, RecommendationResponse, ApiError, UserProfile } from '../models/recommendation.model';
@@ -31,31 +31,23 @@ export class RecommendationService {
   ) {}
 
   recommend(request: RecommendationRequest): Observable<RecommendationResponse> {
-    return from(this.apiKeyService.getApiHeaders()).pipe(
-      switchMap(extraHeaders => {
-        const headers = new HttpHeaders(extraHeaders);
-        return this.http
-          .post<RecommendationResponse>(`${API_BASE}/recommend`, request, { headers })
-          .pipe(
-            timeout(REQUEST_TIMEOUT_MS),
-            catchError(err => this._handleError(err)),
-          );
-      }),
-    );
+    const headers = new HttpHeaders(this.apiKeyService.getApiHeaders());
+    return this.http
+      .post<RecommendationResponse>(`${API_BASE}/recommend`, request, { headers })
+      .pipe(
+        timeout(REQUEST_TIMEOUT_MS),
+        catchError(err => this._handleError(err)),
+      );
   }
 
   getSimilarRecommendations(request: SimilarRecommendationRequest): Observable<RecommendationResponse> {
-    return from(this.apiKeyService.getApiHeaders()).pipe(
-      switchMap(extraHeaders => {
-        const headers = new HttpHeaders(extraHeaders);
-        return this.http
-          .post<RecommendationResponse>(`${API_BASE}/recommend/similar`, request, { headers })
-          .pipe(
-            timeout(REQUEST_TIMEOUT_MS),
-            catchError(err => this._handleError(err)),
-          );
-      }),
-    );
+    const headers = new HttpHeaders(this.apiKeyService.getApiHeaders());
+    return this.http
+      .post<RecommendationResponse>(`${API_BASE}/recommend/similar`, request, { headers })
+      .pipe(
+        timeout(REQUEST_TIMEOUT_MS),
+        catchError(err => this._handleError(err)),
+      );
   }
 
   private _handleError(err: unknown): Observable<never> {

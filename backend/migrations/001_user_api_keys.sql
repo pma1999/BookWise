@@ -1,19 +1,26 @@
 -- Migration 001: Create user_api_keys table
--- Run this on the Supabase database:
---   psql "postgresql://postgres:<password>@db.<project>.supabase.co:5432/postgres"
--- Or paste into the Supabase SQL Editor at:
+-- Run this in the Supabase SQL Editor:
 --   https://supabase.com/dashboard/project/ullvzzjmogjzfnnlqpoz/sql
+--
+-- The table stores each authenticated user's Gemini API key.
+-- RLS ensures every user can only read and write their own row.
+-- The key is accessed directly from the Angular frontend using the
+-- user's session JWT — no backend service_role key required.
 
 CREATE TABLE IF NOT EXISTS user_api_keys (
-  user_id       UUID        NOT NULL,
-  encrypted_key TEXT        NOT NULL,
-  key_hint      TEXT        NOT NULL,   -- e.g. "AIza...4Xz2" – never the full key
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  user_id    UUID        NOT NULL,
+  api_key    TEXT        NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CONSTRAINT user_api_keys_pkey PRIMARY KEY (user_id)
 );
 
--- Enable Row Level Security.
--- The backend uses the service_role key (which bypasses RLS).
--- No client-facing policies are added, so direct frontend access is denied.
+-- Enable Row Level Security
 ALTER TABLE user_api_keys ENABLE ROW LEVEL SECURITY;
+
+-- Users can SELECT, INSERT, UPDATE and DELETE only their own row
+CREATE POLICY "Users can manage their own API key"
+  ON user_api_keys
+  FOR ALL
+  USING  (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
