@@ -9,7 +9,6 @@ import time
 
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request
-from flask_cors import CORS
 
 load_dotenv()
 
@@ -69,7 +68,47 @@ if os.getenv('FLASK_ENV') == 'development' and not origins:
     origins = '*'
 
 logger.info(f'CORS allowed origins: {origins}')
-CORS(app, origins=origins, supports_credentials=False)
+
+
+def _origin_allowed(origin: str) -> bool:
+    """Return True if the request Origin matches any allowed origin."""
+    if not origin:
+        return False
+    for allowed in ALLOWED_ORIGINS:
+        if isinstance(allowed, re.Pattern):
+            if allowed.match(origin):
+                return True
+        elif allowed == origin:
+            return True
+    return False
+
+
+@app.after_request
+def add_cors_headers(response):
+    origin = request.headers.get('Origin', '')
+    if _origin_allowed(origin):
+        response.headers['Access-Control-Allow-Origin'] = origin
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        response.headers['Vary'] = 'Origin'
+    return response
+
+
+@app.route('/api/<path:path>', methods=['OPTIONS'])
+@app.route('/api/', methods=['OPTIONS'])
+def handle_options(path=''):
+    """Handle CORS preflight for all /api/* routes."""
+    origin = request.headers.get('Origin', '')
+    if _origin_allowed(origin):
+        resp = app.make_response('')
+        resp.status_code = 204
+        resp.headers['Access-Control-Allow-Origin'] = origin
+        resp.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+        resp.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        resp.headers['Access-Control-Max-Age'] = '600'
+        resp.headers['Vary'] = 'Origin'
+        return resp
+    return app.make_response(''), 403
 
 
 # ──────────────────────────────────────────────
