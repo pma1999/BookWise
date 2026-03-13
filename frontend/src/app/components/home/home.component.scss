@@ -154,6 +154,15 @@
   }
 }
 
+.error-banner--api-key {
+  background: rgba(229, 152, 29, 0.07);
+  border-color: rgba(229, 152, 29, 0.3);
+
+  .error-icon {
+    color: #e5981d;
+  }
+}
+
 .error-icon {
   color: var(--bw-error);
   flex-shrink: 0;

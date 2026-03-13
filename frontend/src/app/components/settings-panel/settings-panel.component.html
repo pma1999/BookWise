@@ -19,6 +19,18 @@
     </button>
     <button
       class="tab-btn"
+      [class.active]="activeTab === 'api-key'"
+      (click)="activeTab = 'api-key'"
+      type="button"
+    >
+      <span class="material-icons">key</span>
+      API Key
+      @if (!apiKeyHasKey) {
+        <span class="tab-badge tab-badge--warn" title="Clave no configurada">!</span>
+      }
+    </button>
+    <button
+      class="tab-btn"
       [class.active]="activeTab === 'account'"
       (click)="activeTab = 'account'"
       type="button"
@@ -102,6 +114,99 @@
               <button class="btn-cancel" (click)="cancelDelete()" type="button">Cancelar</button>
             </div>
           </div>
+        }
+      </div>
+    }
+
+    <!-- API Key tab -->
+    @if (activeTab === 'api-key') {
+      <div class="panel-section">
+        <h3>Clave de API de Gemini</h3>
+
+        <p class="apikey-description">
+          BookWise usa la API de Google Gemini para generar recomendaciones personalizadas.
+          Cada usuario aporta su propia clave — nunca se usa una clave de servidor compartida.
+        </p>
+
+        <a
+          class="apikey-link"
+          href="https://aistudio.google.com/app/apikey"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span class="material-icons">open_in_new</span>
+          Obtener clave gratis en Google AI Studio
+        </a>
+
+        <!-- Current key status -->
+        @if (apiKeyHasKey && apiKeyHint) {
+          <div class="apikey-current">
+            <span class="material-icons apikey-icon--ok">check_circle</span>
+            <span class="apikey-hint">{{ apiKeyHint }}</span>
+            <button
+              class="btn-icon btn-danger-icon"
+              (click)="onDeleteApiKey()"
+              [disabled]="apiKeyDeleting"
+              title="Eliminar clave"
+              type="button"
+            >
+              <span class="material-icons">{{ apiKeyDeleting ? 'hourglass_empty' : 'delete' }}</span>
+            </button>
+          </div>
+        } @else {
+          <div class="apikey-missing">
+            <span class="material-icons apikey-icon--warn">warning</span>
+            <span>No hay ninguna clave configurada.</span>
+          </div>
+        }
+
+        <hr class="panel-divider" />
+
+        <!-- Set / update key form -->
+        <p class="apikey-form-label">
+          {{ apiKeyHasKey ? 'Actualizar clave' : 'Añadir clave' }}
+        </p>
+
+        <div class="apikey-input-row">
+          <input
+            class="apikey-input"
+            [type]="apiKeyVisible ? 'text' : 'password'"
+            [(ngModel)]="apiKeyInput"
+            placeholder="AIza..."
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button
+            class="btn-icon"
+            (click)="apiKeyVisible = !apiKeyVisible"
+            type="button"
+            [title]="apiKeyVisible ? 'Ocultar' : 'Mostrar'"
+          >
+            <span class="material-icons">{{ apiKeyVisible ? 'visibility_off' : 'visibility' }}</span>
+          </button>
+        </div>
+
+        @if (apiKeyError) {
+          <p class="apikey-error">{{ apiKeyError }}</p>
+        }
+
+        <button
+          class="panel-btn btn-primary"
+          (click)="onSaveApiKey()"
+          [disabled]="!apiKeyInput.trim() || apiKeySaving"
+          type="button"
+        >
+          <span class="material-icons">{{ apiKeySaving ? 'hourglass_empty' : 'save' }}</span>
+          {{ apiKeySaving ? 'Guardando...' : 'Guardar clave' }}
+        </button>
+
+        @if (!isAuthenticated) {
+          <p class="apikey-guest-note">
+            <span class="material-icons" style="font-size:14px;vertical-align:middle">info</span>
+            Como usuario invitado, la clave se guarda en este navegador.
+            <a routerLink="/auth" (click)="onLogin()">Inicia sesión</a>
+            para sincronizarla de forma segura en la nube.
+          </p>
         }
       </div>
     }

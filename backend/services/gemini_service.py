@@ -159,10 +159,9 @@ class GeminiService:
     a valid JSON array with the exact field names we expect — no parsing failures.
     """
 
-    def __init__(self) -> None:
-        api_key = os.getenv('GEMINI_API_KEY')
+    def __init__(self, api_key: str) -> None:
         if not api_key:
-            raise RuntimeError('GEMINI_API_KEY environment variable is not set')
+            raise RuntimeError('Gemini API key is required')
         self._client = genai.Client(api_key=api_key)
 
     @staticmethod

@@ -1,6 +1,15 @@
 """
 BookWise Backend — Flask application entry point.
-Exposes POST /api/recommend.
+Exposes POST /api/recommend and POST /api/recommend/similar.
+
+API key policy:
+  - The server NEVER uses a server-side Gemini key.
+  - Every request must carry the user's own Gemini API key in the
+    X-Gemini-Api-Key header.
+  - Authenticated users: the frontend reads their key from Supabase
+    (user_api_keys table, protected by RLS) and forwards it in this header.
+  - Guest users: the frontend reads the key from localStorage and forwards it.
+  - The backend is completely stateless with respect to API key storage.
 """
 import logging
 import os
@@ -25,8 +34,6 @@ from services.pipeline import RecommendationPipeline
 # App setup
 # ──────────────────────────────────────────────
 
-# Logging is configured here for local dev. Under Gunicorn, gunicorn.conf.py
-# takes over via post_fork so every worker has the correct handlers.
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
@@ -36,18 +43,13 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 # CORS Configuration
-# In production, set FRONTEND_URL to your Vercel frontend URL
-# Supports multiple origins separated by commas; supports * wildcard for preview URLs
 _frontend_urls_str = os.getenv('FRONTEND_URL', '')
 logger.info(f'FRONTEND_URL env var: {_frontend_urls_str}')
 
 
 def _parse_origin(raw: str):
-    """Normalize an origin string and convert glob wildcards to compiled regex."""
     url = raw.strip().rstrip('/')
     if '*' in url:
-        # Convert glob wildcard (*) to regex so flask-cors can match dynamic preview URLs
-        # e.g. https://bookwise-git-*.vercel.app → regex ^https://bookwise\-git\-.*\.vercel\.app$
         pattern = re.escape(url).replace(r'\*', '.*')
         return re.compile(f'^{pattern}$')
     return url
@@ -64,16 +66,16 @@ ALLOWED_ORIGINS = [
     'http://localhost:3000',
     *_frontend_origins,
 ]
-# Filter falsy values and allow all origins in development if no origins configured
 origins = [o for o in ALLOWED_ORIGINS if o]
 if os.getenv('FLASK_ENV') == 'development' and not origins:
     origins = '*'
 
 logger.info(f'CORS allowed origins: {origins}')
 
+_CORS_ALLOW_HEADERS = 'Content-Type, Authorization, X-Gemini-Api-Key'
+
 
 def _origin_allowed(origin: str) -> bool:
-    """Return True if the request Origin matches any allowed origin."""
     if not origin:
         return False
     for allowed in ALLOWED_ORIGINS:
@@ -91,7 +93,7 @@ def add_cors_headers(response):
     if _origin_allowed(origin):
         response.headers['Access-Control-Allow-Origin'] = origin
         response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
-        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        response.headers['Access-Control-Allow-Headers'] = _CORS_ALLOW_HEADERS
         response.headers['Vary'] = 'Origin'
     return response
 
@@ -99,14 +101,13 @@ def add_cors_headers(response):
 @app.route('/api/<path:path>', methods=['OPTIONS'])
 @app.route('/api/', methods=['OPTIONS'])
 def handle_options(path=''):
-    """Handle CORS preflight for all /api/* routes."""
     origin = request.headers.get('Origin', '')
     if _origin_allowed(origin):
         resp = app.make_response('')
         resp.status_code = 204
         resp.headers['Access-Control-Allow-Origin'] = origin
         resp.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
-        resp.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        resp.headers['Access-Control-Allow-Headers'] = _CORS_ALLOW_HEADERS
         resp.headers['Access-Control-Max-Age'] = '600'
         resp.headers['Vary'] = 'Origin'
         return resp
@@ -124,28 +125,43 @@ def _error_response(code: str, message: str, retryable: bool, http_status: int):
 VALID_PURPOSES = {'enjoy', 'learn', 'reflect', 'escape'}
 
 
+def _resolve_api_key() -> tuple[str | None, tuple | None]:
+    """
+    Read the Gemini API key from the X-Gemini-Api-Key request header.
+
+    The backend is completely stateless: it never reads from env vars or DB.
+    The frontend is responsible for supplying the key on every request.
+    """
+    key = request.headers.get('X-Gemini-Api-Key', '').strip()
+    if key:
+        return key, None
+    return None, _error_response(
+        'NO_API_KEY',
+        'Debes configurar tu clave de API de Gemini en Ajustes → API Key.',
+        False, 401,
+    )
+
+
 # ──────────────────────────────────────────────
 # Routes
 # ──────────────────────────────────────────────
 
 @app.route('/api/recommend', methods=['POST'])
 def recommend():
-    data = request.get_json(silent=True)
+    api_key, err = _resolve_api_key()
+    if err:
+        return err
 
+    data = request.get_json(silent=True)
     if not data:
-        return _error_response(
-            'INVALID_REQUEST',
-            'El cuerpo de la petición debe ser JSON.',
-            False, 400,
-        )
+        return _error_response('INVALID_REQUEST', 'El cuerpo de la petición debe ser JSON.', False, 400)
 
     purpose = data.get('purpose')
     freetext = data.get('freetext', '')
 
-    # If purpose is not provided but freetext exists, infer intent
     if not purpose and freetext:
         try:
-            gemini = GeminiService()
+            gemini = GeminiService(api_key=api_key)
             inferred = gemini.infer_intent_from_text(freetext)
             data['purpose'] = inferred['purpose']
             if inferred.get('mood') and not data.get('mood'):
@@ -168,7 +184,7 @@ def recommend():
     start = time.time()
 
     try:
-        pipeline = RecommendationPipeline()
+        pipeline = RecommendationPipeline(api_key=api_key)
         result = pipeline.run(data)
     except GeminiRateLimitError:
         return _error_response(
@@ -189,20 +205,11 @@ def recommend():
             True, 500,
         )
     except RuntimeError as e:
-        # e.g. missing API key
         logger.error('Runtime error: %s', e)
-        return _error_response(
-            'CONFIGURATION_ERROR',
-            'Error de configuración del servidor.',
-            False, 500,
-        )
+        return _error_response('CONFIGURATION_ERROR', 'Error de configuración del servidor.', False, 500)
     except Exception as e:
         logger.exception('Unexpected error in /api/recommend: %s', e)
-        return _error_response(
-            'INTERNAL_ERROR',
-            'Error interno del servidor. Inténtalo de nuevo.',
-            True, 500,
-        )
+        return _error_response('INTERNAL_ERROR', 'Error interno del servidor. Inténtalo de nuevo.', True, 500)
 
     elapsed_ms = int((time.time() - start) * 1000)
     result['meta']['processing_time_ms'] = elapsed_ms
@@ -220,14 +227,13 @@ def recommend():
 @app.route('/api/recommend/similar', methods=['POST'])
 def recommend_similar():
     """Get book recommendations similar to a seed book."""
-    data = request.get_json(silent=True)
+    api_key, err = _resolve_api_key()
+    if err:
+        return err
 
+    data = request.get_json(silent=True)
     if not data:
-        return _error_response(
-            'INVALID_REQUEST',
-            'El cuerpo de la petición debe ser JSON.',
-            False, 400,
-        )
+        return _error_response('INVALID_REQUEST', 'El cuerpo de la petición debe ser JSON.', False, 400)
 
     seed_book = data.get('seed_book')
     if not seed_book or not seed_book.get('title') or not seed_book.get('author'):
@@ -238,27 +244,23 @@ def recommend_similar():
         )
 
     profile = data.get('profile')
-    count = min(data.get('count', 6), 10)  # Max 10
+    count = min(data.get('count', 6), 10)
 
     start = time.time()
 
     try:
-        gemini = GeminiService()
+        gemini = GeminiService(api_key=api_key)
         openlibrary = OpenLibraryService()
 
-        # Get similar recommendations from Gemini
         books = gemini.generate_similar_recommendations(seed_book, profile, count)
 
-        # Validate and enrich with OpenLibrary data
         with_docs, discarded = openlibrary.validate_books(books)
         validated: list[dict] = []
 
-        # AI selects correct OL candidate
         if with_docs:
             ai_resolved = gemini.select_ol_matches(with_docs)
             validated.extend(ai_resolved)
 
-        # Try to correct discarded books
         if discarded:
             corrections = gemini.correct_search_terms(discarded)
             if corrections:
@@ -267,7 +269,6 @@ def recommend_similar():
                     c_recovered = gemini.select_ol_matches(c_with_docs)
                     validated.extend(c_recovered)
 
-        # Enrich validated books
         enriched = openlibrary.enrich_books(validated)
 
         result = {
@@ -299,18 +300,10 @@ def recommend_similar():
         )
     except RuntimeError as e:
         logger.error('Runtime error: %s', e)
-        return _error_response(
-            'CONFIGURATION_ERROR',
-            'Error de configuración del servidor.',
-            False, 500,
-        )
+        return _error_response('CONFIGURATION_ERROR', 'Error de configuración del servidor.', False, 500)
     except Exception as e:
         logger.exception('Unexpected error in /api/recommend/similar: %s', e)
-        return _error_response(
-            'INTERNAL_ERROR',
-            'Error interno del servidor. Inténtalo de nuevo.',
-            True, 500,
-        )
+        return _error_response('INTERNAL_ERROR', 'Error interno del servidor. Inténtalo de nuevo.', True, 500)
 
     elapsed_ms = int((time.time() - start) * 1000)
     result['meta']['processing_time_ms'] = elapsed_ms

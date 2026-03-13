@@ -58,21 +58,28 @@
 
   <!-- ── Error banner ───────────────────────────────────── -->
   @if (appState === 'error' && apiError) {
-    <div class="error-banner" role="alert" aria-live="assertive">
-      <span class="material-icons error-icon" aria-hidden="true">error_outline</span>
+    <div class="error-banner" [class.error-banner--api-key]="apiError.code === 'NO_API_KEY'" role="alert" aria-live="assertive">
+      <span class="material-icons error-icon" aria-hidden="true">{{ apiError.code === 'NO_API_KEY' ? 'key' : 'error_outline' }}</span>
       <div class="error-body">
         <p class="error-message">{{ apiError.message }}</p>
         <div class="error-actions">
-          @if (apiError.retryable) {
-            <button class="btn-retry" (click)="onRetry()" type="button">
-              <span class="material-icons" aria-hidden="true">refresh</span>
-              Reintentar
+          @if (apiError.code === 'NO_API_KEY') {
+            <button class="btn-primary" (click)="onOpenApiKeySettings()" type="button">
+              <span class="material-icons" aria-hidden="true">settings</span>
+              Ir a Ajustes → API Key
+            </button>
+          } @else {
+            @if (apiError.retryable) {
+              <button class="btn-retry" (click)="onRetry()" type="button">
+                <span class="material-icons" aria-hidden="true">refresh</span>
+                Reintentar
+              </button>
+            }
+            <button class="btn-simplify" (click)="onSimplifySearch()" type="button">
+              <span class="material-icons" aria-hidden="true">tune</span>
+              Simplificar búsqueda
             </button>
           }
-          <button class="btn-simplify" (click)="onSimplifySearch()" type="button">
-            <span class="material-icons" aria-hidden="true">tune</span>
-            Simplificar búsqueda
-          </button>
         </div>
       </div>
     </div>

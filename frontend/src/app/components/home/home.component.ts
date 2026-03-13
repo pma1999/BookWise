@@ -15,6 +15,7 @@ import { RecommendationService } from '../../services/recommendation.service';
 import { LocalStorageService } from '../../services/local-storage.service';
 import { UserDataService } from '../../services/user-data.service';
 import { AuthService } from '../../services/auth.service';
+import { ApiKeyService } from '../../services/api-key.service';
 import { DiscoveryFormComponent, FormMode } from '../discovery-form/discovery-form.component';
 import { LoadingStateComponent } from '../loading-state/loading-state.component';
 import { BookCardComponent, BookRating } from '../book-card/book-card.component';
@@ -81,6 +82,7 @@ export class HomeComponent implements OnInit {
     private localStorageService: LocalStorageService,
     private userDataService: UserDataService,
     private authService: AuthService,
+    private apiKeyService: ApiKeyService,
     private cdr: ChangeDetectorRef,
   ) {
     this.localStorageService.profileCleared$.pipe(takeUntilDestroyed()).subscribe(() => {
@@ -176,6 +178,10 @@ export class HomeComponent implements OnInit {
     if (this.currentRequest) {
       this.onFormSubmit(this.currentRequest);
     }
+  }
+
+  onOpenApiKeySettings(): void {
+    this.apiKeyService.requestOpenSettings();
   }
 
   onSimplifySearch(): void {

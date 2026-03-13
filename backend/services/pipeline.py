@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 
 
 class RecommendationPipeline:
-    def __init__(self):
-        self.gemini = GeminiService()
+    def __init__(self, api_key: str):
+        self.gemini = GeminiService(api_key=api_key)
         self.openlibrary = OpenLibraryService()
 
     def run(self, request_data: dict) -> dict:
