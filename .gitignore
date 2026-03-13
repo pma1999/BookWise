@@ -1,0 +1,26 @@
+# Environment files with secrets
+/src/environments/environment.ts
+/src/environments/environment.prod.ts
+frontend/src/environments/environment.ts
+frontend/src/environments/environment.prod.ts
+
+# Node modules
+node_modules/
+frontend/node_modules/
+backend/__pycache__/
+backend/venv/
+
+# Compiled output
+dist/
+tmp/
+out-tsc/
+
+# IDE
+.idea/
+.vscode/
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+.env

@@ -5,8 +5,9 @@ import { timeout, catchError } from 'rxjs/operators';
 
 import { RecommendationRequest, RecommendationResponse, ApiError, UserProfile } from '../models/recommendation.model';
 import { Book } from '../models/book.model';
+import { environment } from '../../environments/environment';
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = (environment.apiUrl || 'http://localhost:5000') + '/api';
 const REQUEST_TIMEOUT_MS = 120_000;
 
 export interface SimilarRecommendationRequest {

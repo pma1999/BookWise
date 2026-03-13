@@ -1,0 +1,11 @@
+// ⚠️ INSTRUCCIONES:
+// 1. Copia este archivo a environment.ts (no se sube a git)
+// 2. Para Vercel: las variables se inyectan desde el dashboard en build time
+// 3. Nunca commitees el archivo environment.ts con credenciales reales
+
+export const environment = {
+  production: false,
+  supabaseUrl: 'YOUR_SUPABASE_URL',
+  supabaseKey: 'YOUR_SUPABASE_ANON_KEY',
+  apiUrl: '', // Dejar vacío para usar localhost:5000
+};

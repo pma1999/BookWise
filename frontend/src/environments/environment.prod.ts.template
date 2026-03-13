@@ -1,0 +1,11 @@
+// ⚠️ INSTRUCCIONES:
+// 1. Copia este archivo a environment.prod.ts (no se sube a git)
+// 2. Para Vercel: las variables se inyectan desde el dashboard en build time
+// 3. Nunca commitees el archivo environment.prod.ts con credenciales reales
+
+export const environment = {
+  production: true,
+  supabaseUrl: 'YOUR_SUPABASE_URL',
+  supabaseKey: 'YOUR_SUPABASE_ANON_KEY',
+  apiUrl: 'https://your-backend.onrender.com', // URL de tu backend en Render
+};

@@ -33,11 +33,21 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
+# CORS Configuration
+# In production, set FRONTEND_URL to your Vercel frontend URL
+# Supports multiple origins separated by commas
+_frontend_urls = os.getenv('FRONTEND_URL', '').split(',') if os.getenv('FRONTEND_URL') else []
 ALLOWED_ORIGINS = [
     'http://localhost:4200',
-    os.getenv('FRONTEND_URL', ''),
+    'http://localhost:3000',
+    *_frontend_urls,
 ]
-CORS(app, origins=[o for o in ALLOWED_ORIGINS if o], supports_credentials=False)
+# Filter out empty strings and allow all origins in development if needed
+origins = [o.strip() for o in ALLOWED_ORIGINS if o.strip()]
+if os.getenv('FLASK_ENV') == 'development' and not origins:
+    origins = '*'
+
+CORS(app, origins=origins, supports_credentials=False)
 
 
 # ──────────────────────────────────────────────
