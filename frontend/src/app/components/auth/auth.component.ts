@@ -2,7 +2,6 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { MatTabsModule } from '@angular/material/tabs';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -18,7 +17,6 @@ import { UserDataService } from '../../services/user-data.service';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    MatTabsModule,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
@@ -150,24 +148,6 @@ export class AuthComponent {
     }
 
     this.isLoading = false;
-  }
-
-  async onGoogleLogin() {
-    this.isLoading = true;
-    const { error } = await this.auth.signInWithOAuth('google');
-    if (error) {
-      this.showError(this.getErrorMessage(error));
-      this.isLoading = false;
-    }
-  }
-
-  async onGithubLogin() {
-    this.isLoading = true;
-    const { error } = await this.auth.signInWithOAuth('github');
-    if (error) {
-      this.showError(this.getErrorMessage(error));
-      this.isLoading = false;
-    }
   }
 
   async onMigrateData() {
