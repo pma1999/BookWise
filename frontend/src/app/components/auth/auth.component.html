@@ -1,217 +1,302 @@
-<div class="auth-container">
-  <div class="auth-card">
-    <div class="auth-header">
-      <h1 class="auth-title">BookWise</h1>
-      <p class="auth-subtitle">Tu biblioteca personal inteligente</p>
+<div class="auth-layout">
+
+  <!-- ── Left decorative panel ─────────────────────────── -->
+  <aside class="auth-left" aria-hidden="true">
+    <div class="auth-left-glow"></div>
+    <div class="auth-left-content">
+      <div class="auth-left-brand">
+        <span class="auth-ornament">❧</span>
+        <h1 class="auth-logo-text">BookWise</h1>
+        <p class="auth-tagline">Tu biblioteca personal inteligente</p>
+      </div>
+      <blockquote class="auth-quote">
+        <p>«Un libro es un sueño que tienes en tus manos.»</p>
+        <cite>— Neil Gaiman</cite>
+      </blockquote>
+    </div>
+    <div class="auth-left-deco" aria-hidden="true">
+      <span class="deco-line deco-line--top"></span>
+      <span class="deco-line deco-line--bottom"></span>
+    </div>
+  </aside>
+
+  <!-- ── Right form panel ──────────────────────────────── -->
+  <main class="auth-right">
+
+    <!-- Mobile brand header -->
+    <div class="auth-brand-mobile">
+      <span class="brand-ornament">❧</span>
+      <span class="brand-name">BookWise</span>
     </div>
 
-    <mat-tab-group [(selectedIndex)]="activeTab" animationDuration="300ms" *ngIf="!showMigrationDialog && !showResetForm">
-      <!-- Login Tab -->
-      <mat-tab label="Iniciar sesión">
-        <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="auth-form">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Email</mat-label>
-            <input matInput type="email" formControlName="email" placeholder="tu@email.com" />
-            <mat-error *ngIf="loginForm.get('email')?.hasError('required')">
-              El email es obligatorio
-            </mat-error>
-            <mat-error *ngIf="loginForm.get('email')?.hasError('email')">
-              Introduce un email válido
-            </mat-error>
-          </mat-form-field>
+    <!-- ── Normal auth forms ─────────────────────────── -->
+    <div class="auth-forms-wrapper" *ngIf="!showMigrationDialog && !showResetForm">
 
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Contraseña</mat-label>
-            <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" />
-            <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword">
+      <!-- Tab toggle -->
+      <div class="auth-toggle" role="tablist">
+        <button
+          class="toggle-btn"
+          [class.active]="activeTab === 0"
+          (click)="activeTab = 0"
+          type="button"
+          role="tab"
+          [attr.aria-selected]="activeTab === 0">
+          Iniciar sesión
+        </button>
+        <button
+          class="toggle-btn"
+          [class.active]="activeTab === 1"
+          (click)="activeTab = 1"
+          type="button"
+          role="tab"
+          [attr.aria-selected]="activeTab === 1">
+          Crear cuenta
+        </button>
+      </div>
+
+      <!-- ── Login form ── -->
+      <form
+        *ngIf="activeTab === 0"
+        [formGroup]="loginForm"
+        (ngSubmit)="onLogin()"
+        class="auth-form"
+        novalidate>
+
+        <div class="form-group" style="--delay: 0ms">
+          <label for="login-email">Correo electrónico</label>
+          <input
+            id="login-email"
+            type="email"
+            formControlName="email"
+            placeholder="tu@email.com"
+            autocomplete="email"
+            [class.has-error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched" />
+          <span class="field-error"
+            *ngIf="loginForm.get('email')?.touched && loginForm.get('email')?.hasError('required')">
+            El email es obligatorio
+          </span>
+          <span class="field-error"
+            *ngIf="loginForm.get('email')?.touched && loginForm.get('email')?.hasError('email')">
+            Introduce un email válido
+          </span>
+        </div>
+
+        <div class="form-group" style="--delay: 60ms">
+          <label for="login-password">Contraseña</label>
+          <div class="input-wrapper">
+            <input
+              id="login-password"
+              [type]="hidePassword ? 'password' : 'text'"
+              formControlName="password"
+              placeholder="Mínimo 8 caracteres"
+              autocomplete="current-password"
+              [class.has-error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" />
+            <button
+              class="btn-eye"
+              type="button"
+              (click)="hidePassword = !hidePassword"
+              [attr.aria-label]="hidePassword ? 'Mostrar contraseña' : 'Ocultar contraseña'">
               <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
             </button>
-            <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
-              La contraseña es obligatoria
-            </mat-error>
-            <mat-error *ngIf="loginForm.get('password')?.hasError('minlength')">
-              Mínimo 8 caracteres
-            </mat-error>
-          </mat-form-field>
-
-          <div class="auth-actions">
-            <button mat-raised-button color="primary" type="submit" class="full-width" [disabled]="isLoading">
-              <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
-              <span *ngIf="!isLoading">Iniciar sesión</span>
-            </button>
           </div>
+          <span class="field-error"
+            *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.hasError('required')">
+            La contraseña es obligatoria
+          </span>
+          <span class="field-error"
+            *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.hasError('minlength')">
+            Mínimo 8 caracteres
+          </span>
+        </div>
 
-          <div class="auth-links">
-            <a href="javascript:void(0)" (click)="showResetForm = true" class="forgot-password">
-              ¿Olvidaste tu contraseña?
-            </a>
-          </div>
+        <div class="form-footer" style="--delay: 120ms">
+          <button
+            class="btn-submit"
+            type="submit"
+            [disabled]="isLoading">
+            <mat-spinner diameter="18" *ngIf="isLoading"></mat-spinner>
+            <span *ngIf="!isLoading">Iniciar sesión</span>
+          </button>
+          <button
+            class="forgot-link"
+            type="button"
+            (click)="showResetForm = true">
+            ¿Olvidaste tu contraseña?
+          </button>
+        </div>
 
-          <div class="divider">
-            <span>o continúa con</span>
-          </div>
+      </form>
 
-          <div class="social-buttons">
-            <button mat-stroked-button type="button" (click)="onGoogleLogin()" [disabled]="isLoading" class="social-button">
-              <svg viewBox="0 0 24 24" class="social-icon">
-                <path fill="currentColor"
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                <path fill="currentColor"
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                <path fill="currentColor"
-                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                <path fill="currentColor"
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-              </svg>
-              Google
-            </button>
-            <button mat-stroked-button type="button" (click)="onGithubLogin()" [disabled]="isLoading" class="social-button">
-              <svg viewBox="0 0 24 24" class="social-icon">
-                <path fill="currentColor"
-                  d="M12 1.27a11 11 0 00-3.48 21.46c.55.1.75-.23.75-.53v-1.86c-3.06.65-3.71-1.46-3.71-1.46-.5-1.27-1.22-1.6-1.22-1.6-.99-.67.08-.66.08-.66 1.09.08 1.67 1.13 1.67 1.13.97 1.67 2.55 1.19 3.17.91.1-.71.38-1.19.68-1.46-2.44-.28-5.01-1.22-5.01-5.44 0-1.2.43-2.19 1.13-2.96-.11-.28-.49-1.41.11-2.94 0 0 .92-.3 3.01 1.13A10.5 10.5 0 0112 6.4c.93 0 1.86.13 2.75.38 2.08-1.43 3-1.13 3-1.13.6 1.53.22 2.66.11 2.94.7.77 1.13 1.76 1.13 2.96 0 4.23-2.57 5.16-5.01 5.43.39.34.74 1 .74 2.02v2.99c0 .3.2.64.76.53A11 11 0 0012 1.27z" />
-              </svg>
-              GitHub
-            </button>
-          </div>
-        </form>
-      </mat-tab>
+      <!-- ── Register form ── -->
+      <form
+        *ngIf="activeTab === 1"
+        [formGroup]="registerForm"
+        (ngSubmit)="onRegister()"
+        class="auth-form"
+        novalidate>
 
-      <!-- Register Tab -->
-      <mat-tab label="Crear cuenta">
-        <form [formGroup]="registerForm" (ngSubmit)="onRegister()" class="auth-form">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Nombre completo</mat-label>
-            <input matInput formControlName="fullName" placeholder="Juan Pérez" />
-            <mat-error *ngIf="registerForm.get('fullName')?.hasError('required')">
-              El nombre es obligatorio
-            </mat-error>
-          </mat-form-field>
+        <div class="form-group" style="--delay: 0ms">
+          <label for="reg-name">Nombre completo</label>
+          <input
+            id="reg-name"
+            type="text"
+            formControlName="fullName"
+            placeholder="Juan Pérez"
+            autocomplete="name"
+            [class.has-error]="registerForm.get('fullName')?.invalid && registerForm.get('fullName')?.touched" />
+          <span class="field-error"
+            *ngIf="registerForm.get('fullName')?.touched && registerForm.get('fullName')?.hasError('required')">
+            El nombre es obligatorio
+          </span>
+        </div>
 
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Email</mat-label>
-            <input matInput type="email" formControlName="email" placeholder="tu@email.com" />
-            <mat-error *ngIf="registerForm.get('email')?.hasError('required')">
-              El email es obligatorio
-            </mat-error>
-            <mat-error *ngIf="registerForm.get('email')?.hasError('email')">
-              Introduce un email válido
-            </mat-error>
-          </mat-form-field>
+        <div class="form-group" style="--delay: 60ms">
+          <label for="reg-email">Correo electrónico</label>
+          <input
+            id="reg-email"
+            type="email"
+            formControlName="email"
+            placeholder="tu@email.com"
+            autocomplete="email"
+            [class.has-error]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched" />
+          <span class="field-error"
+            *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.hasError('required')">
+            El email es obligatorio
+          </span>
+          <span class="field-error"
+            *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.hasError('email')">
+            Introduce un email válido
+          </span>
+        </div>
 
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Contraseña</mat-label>
-            <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" />
-            <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword">
+        <div class="form-group" style="--delay: 120ms">
+          <label for="reg-password">Contraseña</label>
+          <div class="input-wrapper">
+            <input
+              id="reg-password"
+              [type]="hidePassword ? 'password' : 'text'"
+              formControlName="password"
+              placeholder="Mínimo 8 caracteres"
+              autocomplete="new-password"
+              [class.has-error]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched" />
+            <button
+              class="btn-eye"
+              type="button"
+              (click)="hidePassword = !hidePassword"
+              [attr.aria-label]="hidePassword ? 'Mostrar contraseña' : 'Ocultar contraseña'">
               <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
             </button>
-            <mat-error *ngIf="registerForm.get('password')?.hasError('required')">
-              La contraseña es obligatoria
-            </mat-error>
-            <mat-error *ngIf="registerForm.get('password')?.hasError('minlength')">
-              Mínimo 8 caracteres
-            </mat-error>
-          </mat-form-field>
+          </div>
+          <span class="field-error"
+            *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.hasError('required')">
+            La contraseña es obligatoria
+          </span>
+          <span class="field-error"
+            *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.hasError('minlength')">
+            Mínimo 8 caracteres
+          </span>
+        </div>
 
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Confirmar contraseña</mat-label>
-            <input matInput [type]="hideConfirmPassword ? 'password' : 'text'" formControlName="confirmPassword" />
-            <button mat-icon-button matSuffix type="button" (click)="hideConfirmPassword = !hideConfirmPassword">
+        <div class="form-group" style="--delay: 180ms">
+          <label for="reg-confirm">Confirmar contraseña</label>
+          <div class="input-wrapper">
+            <input
+              id="reg-confirm"
+              [type]="hideConfirmPassword ? 'password' : 'text'"
+              formControlName="confirmPassword"
+              placeholder="Repite la contraseña"
+              autocomplete="new-password"
+              [class.has-error]="(registerForm.get('confirmPassword')?.invalid || registerForm.hasError('passwordMismatch')) && registerForm.get('confirmPassword')?.touched" />
+            <button
+              class="btn-eye"
+              type="button"
+              (click)="hideConfirmPassword = !hideConfirmPassword"
+              [attr.aria-label]="hideConfirmPassword ? 'Mostrar contraseña' : 'Ocultar contraseña'">
               <mat-icon>{{ hideConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
             </button>
-            <mat-error *ngIf="registerForm.get('confirmPassword')?.hasError('required')">
-              Confirma tu contraseña
-            </mat-error>
-            <mat-error *ngIf="registerForm.hasError('passwordMismatch')">
-              Las contraseñas no coinciden
-            </mat-error>
-          </mat-form-field>
-
-          <div class="auth-actions">
-            <button mat-raised-button color="primary" type="submit" class="full-width" [disabled]="isLoading">
-              <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
-              <span *ngIf="!isLoading">Crear cuenta</span>
-            </button>
           </div>
+          <span class="field-error"
+            *ngIf="registerForm.get('confirmPassword')?.touched && registerForm.get('confirmPassword')?.hasError('required')">
+            Confirma tu contraseña
+          </span>
+          <span class="field-error"
+            *ngIf="registerForm.get('confirmPassword')?.touched && registerForm.hasError('passwordMismatch')">
+            Las contraseñas no coinciden
+          </span>
+        </div>
 
-          <div class="divider">
-            <span>o regístrate con</span>
-          </div>
+        <div class="form-footer" style="--delay: 240ms">
+          <button
+            class="btn-submit"
+            type="submit"
+            [disabled]="isLoading">
+            <mat-spinner diameter="18" *ngIf="isLoading"></mat-spinner>
+            <span *ngIf="!isLoading">Crear cuenta</span>
+          </button>
+        </div>
 
-          <div class="social-buttons">
-            <button mat-stroked-button type="button" (click)="onGoogleLogin()" [disabled]="isLoading" class="social-button">
-              <svg viewBox="0 0 24 24" class="social-icon">
-                <path fill="currentColor"
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                <path fill="currentColor"
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                <path fill="currentColor"
-                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                <path fill="currentColor"
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-              </svg>
-              Google
-            </button>
-            <button mat-stroked-button type="button" (click)="onGithubLogin()" [disabled]="isLoading" class="social-button">
-              <svg viewBox="0 0 24 24" class="social-icon">
-                <path fill="currentColor"
-                  d="M12 1.27a11 11 0 00-3.48 21.46c.55.1.75-.23.75-.53v-1.86c-3.06.65-3.71-1.46-3.71-1.46-.5-1.27-1.22-1.6-1.22-1.6-.99-.67.08-.66.08-.66 1.09.08 1.67 1.13 1.67 1.13.97 1.67 2.55 1.19 3.17.91.1-.71.38-1.19.68-1.46-2.44-.28-5.01-1.22-5.01-5.44 0-1.2.43-2.19 1.13-2.96-.11-.28-.49-1.41.11-2.94 0 0 .92-.3 3.01 1.13A10.5 10.5 0 0112 6.4c.93 0 1.86.13 2.75.38 2.08-1.43 3-1.13 3-1.13.6 1.53.22 2.66.11 2.94.7.77 1.13 1.76 1.13 2.96 0 4.23-2.57 5.16-5.01 5.43.39.34.74 1 .74 2.02v2.99c0 .3.2.64.76.53A11 11 0 0012 1.27z" />
-              </svg>
-              GitHub
-            </button>
-          </div>
-        </form>
-      </mat-tab>
-    </mat-tab-group>
+      </form>
+    </div>
 
-    <!-- Reset Password Form -->
-    <div *ngIf="showResetForm && !showMigrationDialog" class="reset-password-section">
-      <h2>Restablecer contraseña</h2>
-      <p class="reset-description">
-        Introduce tu email y te enviaremos instrucciones para restablecer tu contraseña.
+    <!-- ── Reset password ────────────────────────────── -->
+    <div class="auth-section reset-section" *ngIf="showResetForm && !showMigrationDialog">
+      <div class="section-icon">
+        <mat-icon>lock_reset</mat-icon>
+      </div>
+      <h2 class="section-title">Restablecer contraseña</h2>
+      <p class="section-description">
+        Introduce tu correo y te enviaremos un enlace para restablecer tu contraseña.
       </p>
-      <form [formGroup]="resetForm" (ngSubmit)="onResetPassword()" class="auth-form">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Email</mat-label>
-          <input matInput type="email" formControlName="email" placeholder="tu@email.com" />
-          <mat-error *ngIf="resetForm.get('email')?.hasError('required')">
+      <form [formGroup]="resetForm" (ngSubmit)="onResetPassword()" class="auth-form" novalidate>
+        <div class="form-group" style="--delay: 0ms">
+          <label for="reset-email">Correo electrónico</label>
+          <input
+            id="reset-email"
+            type="email"
+            formControlName="email"
+            placeholder="tu@email.com"
+            autocomplete="email"
+            [class.has-error]="resetForm.get('email')?.invalid && resetForm.get('email')?.touched" />
+          <span class="field-error"
+            *ngIf="resetForm.get('email')?.touched && resetForm.get('email')?.hasError('required')">
             El email es obligatorio
-          </mat-error>
-          <mat-error *ngIf="resetForm.get('email')?.hasError('email')">
+          </span>
+          <span class="field-error"
+            *ngIf="resetForm.get('email')?.touched && resetForm.get('email')?.hasError('email')">
             Introduce un email válido
-          </mat-error>
-        </mat-form-field>
-
-        <div class="auth-actions">
-          <button mat-raised-button color="primary" type="submit" class="full-width" [disabled]="isLoading">
-            <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
+          </span>
+        </div>
+        <div class="form-footer" style="--delay: 60ms">
+          <button class="btn-submit" type="submit" [disabled]="isLoading">
+            <mat-spinner diameter="18" *ngIf="isLoading"></mat-spinner>
             <span *ngIf="!isLoading">Enviar instrucciones</span>
           </button>
-          <button mat-button type="button" (click)="showResetForm = false" class="full-width">
-            Volver al inicio de sesión
+          <button class="btn-back" type="button" (click)="showResetForm = false">
+            ← Volver al inicio de sesión
           </button>
         </div>
       </form>
     </div>
 
-    <!-- Migration Dialog -->
-    <div *ngIf="showMigrationDialog" class="migration-section">
-      <div class="migration-icon">
-        <mat-icon>sync</mat-icon>
+    <!-- ── Migration dialog ──────────────────────────── -->
+    <div class="auth-section migration-section" *ngIf="showMigrationDialog">
+      <div class="section-icon migration-icon">
+        <mat-icon>cloud_sync</mat-icon>
       </div>
-      <h2>Migrar datos guardados</h2>
-      <p class="migration-description">
-        Hemos detectado que tienes datos guardados localmente (libros, historial, etc.).
-        ¿Deseas migrar estos datos a tu cuenta para acceder a ellos desde cualquier dispositivo?
+      <h2 class="section-title">Migrar datos guardados</h2>
+      <p class="section-description">
+        Tienes datos guardados localmente (libros, historial…). ¿Deseas sincronizarlos con tu cuenta para acceder desde cualquier dispositivo?
       </p>
       <div class="migration-actions">
-        <button mat-raised-button color="primary" (click)="onMigrateData()" [disabled]="isLoading" class="full-width">
-          <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
-          <span *ngIf="!isLoading">Sí, migrar mis datos</span>
+        <button class="btn-submit" (click)="onMigrateData()" [disabled]="isLoading">
+          <mat-spinner diameter="18" *ngIf="isLoading"></mat-spinner>
+          <span *ngIf="!isLoading">Sí, sincronizar mis datos</span>
         </button>
-        <button mat-button (click)="onSkipMigration()" [disabled]="isLoading" class="full-width">
+        <button class="btn-back" (click)="onSkipMigration()" [disabled]="isLoading">
           No, empezar de cero
         </button>
       </div>
     </div>
-  </div>
+
+  </main>
 </div>
