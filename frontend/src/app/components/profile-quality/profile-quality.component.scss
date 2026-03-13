@@ -9,6 +9,20 @@
   padding: 1rem 1.25rem;
   margin-bottom: 1.5rem;
   box-shadow: var(--bw-shadow-sm);
+  position: relative;
+  overflow: hidden;
+  transition: border-color var(--bw-transition), box-shadow var(--bw-transition);
+
+  // Subtle top accent line
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(200, 146, 42, 0.1), transparent);
+  }
 }
 
 // ── Header ───────────────────────────────────────────────────
@@ -30,26 +44,31 @@
 }
 
 .quality-label {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--bw-font-display);
   font-size: 1.0625rem;
   font-weight: 600;
   color: var(--bw-text-primary);
   margin: 0 0 0.25rem;
   line-height: 1.3;
+  letter-spacing: 0.01em;
 }
 
 .quality-description {
+  font-family: var(--bw-font-body);
   font-size: 0.8125rem;
   color: var(--bw-text-tertiary);
   margin: 0;
   line-height: 1.5;
+  font-style: italic;
 }
 
 .quality-count {
+  font-family: var(--bw-font-ui);
   font-size: 0.75rem;
   font-weight: 500;
   color: var(--bw-text-tertiary);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(200, 146, 42, 0.06);
+  border: 1px solid rgba(200, 146, 42, 0.12);
   padding: 0.25rem 0.625rem;
   border-radius: 100px;
   white-space: nowrap;
@@ -59,8 +78,8 @@
 // ── Progress Bar ─────────────────────────────────────────────
 .quality-progress {
   margin-top: 0.875rem;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.08);
+  height: 3px;
+  background: rgba(200, 146, 42, 0.06);
   border-radius: 100px;
   overflow: hidden;
 }
@@ -68,39 +87,71 @@
 .progress-bar {
   height: 100%;
   border-radius: 100px;
-  transition: background 0.3s ease;
+  transition: background 0.3s ease, width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-// ── Color Variants ───────────────────────────────────────────
+// ── Color Variants — harmonized with gold palette ─────────────
+// Empty / no data — muted warm gray
 .color-gray {
-  border-left: 3px solid #6b7280;
+  border-left: 3px solid rgba(200, 146, 42, 0.2);
 
   .quality-label {
-    color: #9ca3af;
+    color: var(--bw-text-secondary);
+  }
+
+  .quality-count {
+    color: var(--bw-text-tertiary);
   }
 }
 
+// Beginning — warm amber, same family as primary
 .color-blue {
-  border-left: 3px solid #60a5fa;
+  border-left: 3px solid rgba(200, 146, 42, 0.5);
 
   .quality-label {
-    color: #93c5fd;
+    color: var(--bw-primary-light);
+  }
+
+  .quality-count {
+    color: var(--bw-primary);
+    background: rgba(200, 146, 42, 0.08);
+    border-color: rgba(200, 146, 42, 0.2);
   }
 }
 
+// Good — primary gold
 .color-amber {
-  border-left: 3px solid #f59e0b;
+  border-left: 3px solid var(--bw-primary);
 
   .quality-label {
-    color: #fbbf24;
+    color: var(--bw-primary-light);
+  }
+
+  .quality-count {
+    color: var(--bw-primary);
+    background: rgba(200, 146, 42, 0.1);
+    border-color: rgba(200, 146, 42, 0.25);
   }
 }
 
+// Excellent — vivid gold
 .color-green {
-  border-left: 3px solid #22c55e;
+  border-left: 3px solid var(--bw-primary-vivid);
 
   .quality-label {
-    color: #86efac;
+    color: var(--bw-primary-vivid);
+  }
+
+  .quality-count {
+    color: var(--bw-primary-vivid);
+    background: rgba(240, 192, 64, 0.1);
+    border-color: rgba(240, 192, 64, 0.3);
+  }
+
+  // Soft glow on the widget for excellent quality
+  &.profile-quality-widget {
+    border-color: rgba(200, 146, 42, 0.2);
+    box-shadow: var(--bw-shadow-sm), 0 0 0 1px rgba(200, 146, 42, 0.08);
   }
 }
 

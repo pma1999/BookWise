@@ -5,7 +5,7 @@
 .book-detail-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.72);
   z-index: 1000;
   display: flex;
   justify-content: flex-end;
@@ -18,10 +18,12 @@
   min-width: 380px;
   height: 100%;
   background: var(--bw-surface);
-  border-left: 1px solid var(--bw-border);
+  border-left: 1px solid var(--bw-border-gold);
   overflow-y: auto;
   position: relative;
-  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: slideInRight 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  // Atmospheric shadow emanating left
+  box-shadow: -8px 0 48px rgba(0, 0, 0, 0.55), -1px 0 0 rgba(200, 146, 42, 0.12);
 }
 
 .btn-close {
@@ -31,19 +33,21 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: none;
-  background: rgba(26, 18, 8, 0.8);
+  border: 1px solid rgba(200, 146, 42, 0.2);
+  background: rgba(16, 12, 7, 0.85);
   color: var(--bw-text-secondary);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10;
-  transition: background 0.2s, color 0.2s;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  backdrop-filter: blur(8px);
 
   &:hover {
-    background: rgba(26, 18, 8, 1);
+    background: rgba(16, 12, 7, 0.95);
     color: var(--bw-text-primary);
+    border-color: var(--bw-border-gold);
   }
 
   .material-icons {
@@ -52,40 +56,72 @@
 }
 
 .detail-content {
-  padding: 0 0 2rem;
+  padding: 0 0 2.5rem;
 }
 
 // ── Cover Section ─────────────────────────────────────────────
 .detail-cover-section {
-  padding: 2rem;
-  background: linear-gradient(180deg, rgba(200, 146, 42, 0.05) 0%, transparent 100%);
+  padding: 2.5rem 2rem 2rem;
+  background: linear-gradient(
+    180deg,
+    rgba(200, 146, 42, 0.09) 0%,
+    rgba(200, 146, 42, 0.03) 50%,
+    transparent 100%
+  );
   display: flex;
   justify-content: center;
+  position: relative;
+
+  // Subtle top glow
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(200, 146, 42, 0.3), transparent);
+  }
 }
 
 .detail-cover-img,
 .detail-cover-placeholder {
-  width: 200px;
+  width: 210px;
   aspect-ratio: 2 / 3;
   border-radius: var(--bw-radius-md);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
 }
 
 .detail-cover-img {
   object-fit: cover;
+  box-shadow:
+    2px 0 0 rgba(0, 0, 0, 0.5),
+    8px 12px 40px rgba(0, 0, 0, 0.65),
+    16px 20px 60px rgba(0, 0, 0, 0.45);
 }
 
 .detail-cover-placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    2px 0 0 rgba(0, 0, 0, 0.5),
+    8px 12px 40px rgba(0, 0, 0, 0.65),
+    16px 20px 60px rgba(0, 0, 0, 0.45);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 30% 25%, rgba(200, 146, 42, 0.18), transparent 60%);
+  }
 }
 
 .cover-initials {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 3rem;
+  font-family: var(--bw-font-display);
+  font-size: 3.5rem;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.8);
+  position: relative;
+  z-index: 1;
 }
 
 // ── Info Section ──────────────────────────────────────────────
@@ -94,33 +130,36 @@
 }
 
 .detail-title {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 1.75rem;
+  font-family: var(--bw-font-display);
+  font-size: 2rem;
   font-weight: 700;
   color: var(--bw-text-primary);
-  line-height: 1.25;
+  line-height: 1.2;
   margin: 0 0 0.5rem;
-  letter-spacing: 0.01em;
+  letter-spacing: -0.01em;
 }
 
 .detail-author {
-  font-size: 1rem;
+  font-size: 1.0625rem;
   font-weight: 500;
   color: var(--bw-text-secondary);
-  margin: 0 0 0.75rem;
+  margin: 0 0 0.875rem;
+  font-family: var(--bw-font-ui);
+  letter-spacing: 0.01em;
 }
 
 .detail-meta {
   display: flex;
   align-items: center;
   gap: 0.375rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.125rem;
   flex-wrap: wrap;
 }
 
 .meta-item {
   font-size: 0.875rem;
   color: var(--bw-text-tertiary);
+  font-family: var(--bw-font-ui);
 
   &.rating {
     color: var(--bw-primary);
@@ -144,7 +183,7 @@
 .detail-badges {
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.375rem;
   flex-wrap: wrap;
 }
 
@@ -156,6 +195,7 @@
   border-radius: 100px;
   font-size: 0.8125rem;
   font-weight: 500;
+  font-family: var(--bw-font-ui);
 
   .material-icons {
     font-size: 1rem;
@@ -163,15 +203,15 @@
 }
 
 .badge-read {
-  background: rgba(122, 171, 114, 0.15);
+  background: rgba(122, 171, 114, 0.12);
   color: var(--bw-success);
-  border: 1px solid rgba(122, 171, 114, 0.3);
+  border: 1px solid rgba(122, 171, 114, 0.28);
 }
 
 .badge-saved {
-  background: rgba(200, 146, 42, 0.15);
+  background: rgba(200, 146, 42, 0.12);
   color: var(--bw-primary);
-  border: 1px solid rgba(200, 146, 42, 0.3);
+  border: 1px solid rgba(200, 146, 42, 0.28);
 }
 
 // ── Reason Callout ────────────────────────────────────────────
@@ -179,7 +219,7 @@
   display: flex;
   gap: 0.75rem;
   padding: 1.125rem 1.25rem;
-  background: rgba(200, 146, 42, 0.08);
+  background: linear-gradient(135deg, rgba(200, 146, 42, 0.09) 0%, rgba(200, 146, 42, 0.04) 100%);
   border-left: 3px solid var(--bw-primary);
   border-radius: 0 var(--bw-radius-sm) var(--bw-radius-sm) 0;
   margin-bottom: 1.5rem;
@@ -192,17 +232,17 @@
 
 .reason-text {
   margin: 0;
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--bw-font-body);
   font-size: 1rem;
   font-style: italic;
   color: var(--bw-text-secondary);
-  line-height: 1.6;
+  line-height: 1.7;
 }
 
 // ── Section Titles ───────────────────────────────────────────
 .section-title {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 1rem;
+  font-family: var(--bw-font-display);
+  font-size: 1.0625rem;
   font-weight: 600;
   color: var(--bw-text-primary);
   margin: 0 0 0.75rem;
@@ -215,8 +255,9 @@
 }
 
 .description-text {
+  font-family: var(--bw-font-body);
   font-size: 0.9375rem;
-  line-height: 1.7;
+  line-height: 1.75;
   color: var(--bw-text-secondary);
   margin: 0;
 }
@@ -233,14 +274,17 @@
 }
 
 .subject-chip {
-  font-size: 0.8125rem;
-  font-weight: 500;
+  font-size: 0.75rem;
+  font-weight: 600;
   color: var(--bw-primary);
-  background: rgba(200, 146, 42, 0.08);
-  border: 1px solid rgba(200, 146, 42, 0.2);
+  background: rgba(200, 146, 42, 0.07);
+  border: 1px solid rgba(200, 146, 42, 0.22);
   border-radius: 100px;
   padding: 0.375rem 0.875rem;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.03em;
+  font-family: var(--bw-font-ui);
+  text-transform: uppercase;
+  font-size: 0.6875rem;
 }
 
 // ── Actions ──────────────────────────────────────────────────
@@ -264,8 +308,8 @@
   transition: all 0.2s;
   border: 1.5px solid var(--bw-primary);
   background: var(--bw-primary);
-  color: #1a1208;
-  font-family: 'Outfit', sans-serif;
+  color: #0d0a06;
+  font-family: var(--bw-font-ui);
 
   .material-icons {
     font-size: 1.25rem;
@@ -275,6 +319,7 @@
     background: var(--bw-primary-light);
     border-color: var(--bw-primary-light);
     transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(200, 146, 42, 0.4);
   }
 
   &.is-saved {
@@ -298,10 +343,10 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  border: 1.5px solid var(--bw-border);
+  border: 1.5px solid rgba(200, 146, 42, 0.2);
   background: transparent;
   color: var(--bw-text-secondary);
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--bw-font-ui);
 
   .material-icons {
     font-size: 1.25rem;
@@ -310,7 +355,7 @@
   &:hover {
     border-color: var(--bw-primary);
     color: var(--bw-primary);
-    background: rgba(200, 146, 42, 0.05);
+    background: rgba(200, 146, 42, 0.06);
   }
 }
 
@@ -331,10 +376,10 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  border: 1px solid var(--bw-border);
+  border: 1px solid rgba(200, 146, 42, 0.12);
   background: transparent;
   color: var(--bw-text-secondary);
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--bw-font-ui);
 
   .material-icons {
     font-size: 1.125rem;
@@ -343,25 +388,26 @@
   &:hover {
     background: rgba(255, 255, 255, 0.05);
     color: var(--bw-text-primary);
+    border-color: rgba(200, 146, 42, 0.25);
   }
 
   &.is-read {
     color: var(--bw-success);
     border-color: rgba(122, 171, 114, 0.3);
-    background: rgba(122, 171, 114, 0.1);
+    background: rgba(122, 171, 114, 0.08);
   }
 
   &.is-discarded {
     color: var(--bw-error);
     border-color: rgba(196, 97, 78, 0.3);
-    background: rgba(196, 97, 78, 0.1);
+    background: rgba(196, 97, 78, 0.08);
   }
 }
 
 .btn-discard:hover {
   color: var(--bw-error);
   border-color: rgba(196, 97, 78, 0.3);
-  background: rgba(196, 97, 78, 0.1);
+  background: rgba(196, 97, 78, 0.08);
 }
 
 // ── Rating Modal ──────────────────────────────────────────────
@@ -373,10 +419,11 @@
   padding: 1.25rem;
   margin-bottom: 1rem;
   animation: fadeIn 0.2s ease;
+  box-shadow: var(--bw-shadow-warm);
 }
 
 .rating-prompt {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--bw-font-display);
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--bw-text-primary);
@@ -398,7 +445,7 @@
   border: 1.5px solid var(--bw-border);
   background: var(--bw-surface);
   font-size: 0.875rem;
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--bw-font-ui);
   cursor: pointer;
   transition: all 0.2s;
   color: var(--bw-text-primary);
@@ -410,6 +457,7 @@
     border-color: var(--bw-border-gold);
     background: var(--bw-surface-tint);
     transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(200, 146, 42, 0.15);
   }
 }
 
@@ -445,7 +493,7 @@
   flex-direction: column;
   gap: 0.5rem;
   padding-top: 1rem;
-  border-top: 1px solid var(--bw-border);
+  border-top: 1px solid rgba(200, 146, 42, 0.1);
 }
 
 .external-link {
@@ -457,6 +505,7 @@
   text-decoration: none;
   padding: 0.5rem 0;
   transition: color 0.2s;
+  font-family: var(--bw-font-ui);
 
   .material-icons {
     font-size: 1rem;
@@ -491,10 +540,12 @@
     max-width: none;
     min-width: auto;
     animation: slideInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    border-left: none;
+    border-top: 1px solid var(--bw-border-gold);
   }
 
   .detail-cover-section {
-    padding: 1.5rem;
+    padding: 2rem 1.5rem 1.5rem;
   }
 
   .detail-cover-img,
@@ -503,7 +554,7 @@
   }
 
   .detail-title {
-    font-size: 1.5rem;
+    font-size: 1.625rem;
   }
 
   .icon-actions-row {

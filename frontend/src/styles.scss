@@ -1,24 +1,27 @@
 @use '@angular/material' as mat;
 
-// ── BookWise Design Tokens — Antiquarian Atelier ─────────
+// ── BookWise Design Tokens — The Illuminated Folio ────────
 :root {
-  // Backgrounds
-  --bw-bg:              #1a1208;
-  --bw-surface:         #231810;
-  --bw-surface-2:       #2d2015;
-  --bw-surface-tint:    rgba(200, 146, 42, 0.08);
+  // Backgrounds — deeper, more theatrical
+  --bw-bg:              #100c07;
+  --bw-surface:         #1b1209;
+  --bw-surface-2:       #261a10;
+  --bw-surface-3:       #2e2018;
+  --bw-surface-tint:    rgba(200, 146, 42, 0.09);
 
-  // Brand gold — amber candlelight
+  // Brand gold — amber candlelight, richer palette
   --bw-primary:         #c8922a;
-  --bw-primary-light:   #e0b060;
+  --bw-primary-light:   #e8b842;
+  --bw-primary-vivid:   #f0c040;
   --bw-primary-dark:    #9a6e18;
+  --bw-primary-glow:    rgba(200, 146, 42, 0.2);
 
   // Secondary warmth
-  --bw-accent:          #d4846a;
+  --bw-accent:          #c97a5e;
 
   // Text — parchment scale
-  --bw-text-primary:    #f0e6d0;
-  --bw-text-secondary:  #b8a88c;
+  --bw-text-primary:    #f2e8d5;
+  --bw-text-secondary:  #baa898;
   --bw-text-tertiary:   #7d6c58;
 
   // Status
@@ -26,22 +29,32 @@
   --bw-success:         #7aab72;
 
   // Borders
-  --bw-border:          rgba(200, 146, 42, 0.10);
-  --bw-border-gold:     rgba(200, 146, 42, 0.30);
+  --bw-border:          rgba(200, 146, 42, 0.12);
+  --bw-border-gold:     rgba(200, 146, 42, 0.35);
 
-  // Shadows
-  --bw-shadow-sm:   0 1px 6px rgba(0, 0, 0, 0.4);
-  --bw-shadow-md:   0 4px 20px rgba(0, 0, 0, 0.5);
-  --bw-shadow-lg:   0 8px 40px rgba(0, 0, 0, 0.6);
-  --bw-shadow-warm: 0 4px 24px rgba(200, 146, 42, 0.15), 0 0 0 1px rgba(200, 146, 42, 0.12);
+  // Shadows — more dramatic
+  --bw-shadow-sm:   0 1px 6px rgba(0, 0, 0, 0.5);
+  --bw-shadow-md:   0 4px 20px rgba(0, 0, 0, 0.6);
+  --bw-shadow-lg:   0 8px 40px rgba(0, 0, 0, 0.7);
+  --bw-shadow-warm: 0 4px 24px rgba(200, 146, 42, 0.18), 0 0 0 1px rgba(200, 146, 42, 0.14);
+  --bw-shadow-glow: 0 0 40px rgba(200, 146, 42, 0.12), 0 8px 32px rgba(0, 0, 0, 0.6);
+  --bw-shadow-card: 0 2px 8px rgba(0, 0, 0, 0.4), 0 8px 32px rgba(0, 0, 0, 0.3);
 
   // Shape
+  --bw-radius-xs: 3px;
   --bw-radius-sm: 6px;
   --bw-radius-md: 10px;
   --bw-radius-lg: 16px;
 
   // Motion
-  --bw-transition: 280ms cubic-bezier(0.4, 0, 0.2, 1);
+  --bw-transition:      280ms cubic-bezier(0.4, 0, 0.2, 1);
+  --bw-transition-fast: 180ms cubic-bezier(0.4, 0, 0.2, 1);
+  --bw-transition-slow: 420ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  // Font families
+  --bw-font-display: 'Cormorant Garamond', Georgia, serif;
+  --bw-font-body:    'Lora', Georgia, serif;
+  --bw-font-ui:      'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 // ── Angular Material Theme — Dark + Amber ────────────────
@@ -70,7 +83,7 @@ body {
   color-scheme: dark;
   background-color: var(--bw-bg);
   color: var(--bw-text-primary);
-  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--bw-font-ui);
   font-size: 16px;
   line-height: 1.6;
   margin: 0;
@@ -78,6 +91,10 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   position: relative;
+  // Subtle dot grid — architectural depth
+  background-image: radial-gradient(circle, rgba(200, 146, 42, 0.028) 1px, transparent 1px);
+  background-size: 28px 28px;
+  background-attachment: fixed;
 }
 
 // Grain texture overlay — subtle noise over everything
@@ -87,13 +104,13 @@ body::before {
   inset: 0;
   z-index: 9999;
   pointer-events: none;
-  opacity: 0.030;
+  opacity: 0.045;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
   background-size: 180px 180px;
 }
 
 h1, h2, h3, h4 {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: var(--bw-font-display);
   font-weight: 700;
   line-height: 1.2;
   margin: 0;
@@ -108,7 +125,7 @@ a {
 }
 
 button {
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--bw-font-ui);
   cursor: pointer;
 }
 
@@ -117,7 +134,7 @@ img {
   max-width: 100%;
 }
 
-// ── Skeleton / Shimmer — dark variant ────────────────────
+// ── Skeleton / Shimmer — deep dark variant ────────────────
 @keyframes shimmer {
   0%   { background-position: -600px 0; }
   100% { background-position: 600px 0; }
@@ -126,16 +143,16 @@ img {
 .skeleton {
   background: linear-gradient(
     90deg,
-    #231810 25%,
-    #2d2015 50%,
-    #231810 75%
+    #1b1209 25%,
+    #261a10 50%,
+    #1b1209 75%
   );
   background-size: 1200px 100%;
   animation: shimmer 2s infinite linear;
   border-radius: var(--bw-radius-sm);
 }
 
-// ── Slide-up stagger animation ────────────────────────────
+// ── Keyframe Animations ────────────────────────────────────
 @keyframes slideUp {
   from {
     opacity: 0;
@@ -147,10 +164,33 @@ img {
   }
 }
 
-// ── Fade-in animation ─────────────────────────────────────
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spotlightReveal {
+  from { opacity: 0; transform: scale(0.97) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1; }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes shimmerShine {
+  0%   { left: -100%; }
+  100% { left: 100%; }
 }
 
 .fade-in {
@@ -159,15 +199,15 @@ img {
 
 // ── Scrollbar — warm gold thumb ───────────────────────────
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: rgba(16, 12, 7, 0.5);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(200, 146, 42, 0.3);
-  border-radius: 3px;
+  background: rgba(200, 146, 42, 0.28);
+  border-radius: 4px;
   &:hover { background: rgba(200, 146, 42, 0.5); }
 }
 
@@ -182,4 +222,25 @@ img {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+// ── Page hero glow — reusable ─────────────────────────────
+.page-hero-glow {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 900px;
+    height: 500px;
+    background:
+      radial-gradient(ellipse 900px 400px at 50% 0%, rgba(200, 146, 42, 0.09) 0%, transparent 60%),
+      radial-gradient(ellipse 500px 280px at 50% 0%, rgba(200, 146, 42, 0.06) 0%, transparent 50%),
+      radial-gradient(ellipse 300px 180px at 50% 0%, rgba(240, 192, 64, 0.04) 0%, transparent 40%);
+    pointer-events: none;
+    z-index: 0;
+  }
 }
