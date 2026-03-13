@@ -294,6 +294,7 @@ class GeminiService:
             config = self._make_config(
                 max_output_tokens=4096,
                 response_json_schema=_OL_SELECTION_SCHEMA,
+                include_search=False,
             )
             response = self._client.models.generate_content(
                 model=MODEL,
@@ -404,15 +405,16 @@ class GeminiService:
         *,
         max_output_tokens: int,
         response_json_schema: dict | None = None,
+        include_search: bool = True,
     ) -> types.GenerateContentConfig:
         """
         Centralised factory for GenerateContentConfig.
 
-        Every call through this factory gets:
-        - thinking_level='high'  → maximum reasoning depth (Gemini 3 models)
-        - google_search grounding → model can verify book data in real time
-        - system_instruction      → expert librarian persona
-        - response_mime_type      → strict JSON output
+        Every call gets thinking_level='high' for maximum reasoning depth.
+        Google Search grounding is enabled by default (include_search=True) so
+        the model can verify book data in real time; pass include_search=False
+        for tasks that work entirely with data already provided in the prompt
+        (e.g. selecting among OpenLibrary candidates already returned by the API).
         """
         return types.GenerateContentConfig(
             system_instruction=SYSTEM_PROMPT,
@@ -420,7 +422,7 @@ class GeminiService:
             response_mime_type='application/json',
             response_json_schema=response_json_schema,
             thinking_config=_THINKING_CONFIG,
-            tools=[_SEARCH_TOOL],
+            tools=[_SEARCH_TOOL] if include_search else None,
         )
 
     def _call(self, prompt: str) -> list[dict]:
@@ -566,11 +568,6 @@ class GeminiService:
                 editions = doc.get('edition_count', '?')
                 lines.append(f'  [{j}] "{ol_title}" / {ol_authors} / {ol_year} — {editions} ediciones')
             lines.append('')
-        lines.append(
-            'Dispones de la herramienta de búsqueda web. Úsala si necesitas verificar '
-            'datos bibliográficos (año de publicación, nombre exacto del autor, ediciones) '
-            'para confirmar cuál candidato de OpenLibrary corresponde al libro correcto.'
-        )
         return '\n'.join(lines)
 
     def _build_similar_prompt(self, seed_book: dict, profile: dict | None, count: int) -> str:
