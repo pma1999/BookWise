@@ -98,6 +98,31 @@ def add_cors_headers(response):
     return response
 
 
+@app.errorhandler(Exception)
+def handle_unhandled_exception(e):
+    from werkzeug.exceptions import HTTPException
+    if isinstance(e, HTTPException):
+        # Let Flask handle standard HTTP errors (404, 405, …) normally;
+        # after_request will add CORS headers to those responses.
+        return e
+    logger.exception('Unhandled exception: %s', e)
+    origin = request.headers.get('Origin', '')
+    response = jsonify({
+        'error': {
+            'code': 'INTERNAL_ERROR',
+            'message': 'Error interno del servidor. Inténtalo de nuevo.',
+            'retryable': True,
+        }
+    })
+    response.status_code = 500
+    if _origin_allowed(origin):
+        response.headers['Access-Control-Allow-Origin'] = origin
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = _CORS_ALLOW_HEADERS
+        response.headers['Vary'] = 'Origin'
+    return response
+
+
 @app.route('/api/<path:path>', methods=['OPTIONS'])
 @app.route('/api/', methods=['OPTIONS'])
 def handle_options(path=''):
