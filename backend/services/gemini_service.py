@@ -1,7 +1,8 @@
 """
 Gemini integration for generating book recommendations.
 SDK: google-genai (google.genai) — current, non-deprecated SDK.
-Model: gemini-3-flash-preview
+Primary model: gemini-3-flash-preview
+Fallback model on 429: gemini-3.1-flash-lite-preview
 
 Key design decisions:
 - response_mime_type='application/json' + response_json_schema enforces field names
@@ -34,6 +35,7 @@ class GeminiInvalidResponseError(Exception):
 # ── Constants ─────────────────────────────────────────────
 
 MODEL = 'gemini-3-flash-preview'
+FALLBACK_MODEL = 'gemini-3.1-flash-lite-preview'
 
 # Strict JSON schema passed to the API so field names are always correct
 # regardless of the prompt language or model behaviour.
@@ -163,6 +165,46 @@ class GeminiService:
             raise RuntimeError('GEMINI_API_KEY environment variable is not set')
         self._client = genai.Client(api_key=api_key)
 
+    @staticmethod
+    def _is_rate_limit_error(exc: ClientError) -> bool:
+        return exc.code == 429 or (exc.status or '').upper() == 'RESOURCE_EXHAUSTED'
+
+    def _generate_content_with_fallback(
+        self,
+        *,
+        contents: str,
+        config: types.GenerateContentConfig,
+    ):
+        """Retry with fallback model when the primary model is rate-limited."""
+        try:
+            return self._client.models.generate_content(
+                model=MODEL,
+                contents=contents,
+                config=config,
+            )
+        except ClientError as exc:
+            if not self._is_rate_limit_error(exc):
+                self._raise_for_client_error(exc)
+
+            logger.warning(
+                'Primary Gemini model rate-limited (code=%s, status=%s). Retrying with fallback model %s.',
+                exc.code,
+                exc.status,
+                FALLBACK_MODEL,
+            )
+            try:
+                return self._client.models.generate_content(
+                    model=FALLBACK_MODEL,
+                    contents=contents,
+                    config=config,
+                )
+            except ClientError as fallback_exc:
+                self._raise_for_client_error(fallback_exc)
+            except ServerError as fallback_exc:
+                raise GeminiUnavailableError(str(fallback_exc)) from fallback_exc
+        except ServerError as exc:
+            raise GeminiUnavailableError(str(exc)) from exc
+
     # ── Public API ─────────────────────────────────────────
 
     def get_recommendations(self, request_data: dict) -> list[dict]:
@@ -241,11 +283,7 @@ class GeminiService:
                 max_output_tokens=4096,
                 response_json_schema=_OL_CORRECTION_SCHEMA,
             )
-            response = self._client.models.generate_content(
-                model=MODEL,
-                contents=prompt,
-                config=config,
-            )
+            response = self._generate_content_with_fallback(contents=prompt, config=config)
             raw = response.text
             if not raw or not raw.strip():
                 logger.warning('correct_search_terms: empty response from Gemini')
@@ -296,11 +334,7 @@ class GeminiService:
                 response_json_schema=_OL_SELECTION_SCHEMA,
                 include_search=False,
             )
-            response = self._client.models.generate_content(
-                model=MODEL,
-                contents=prompt,
-                config=config,
-            )
+            response = self._generate_content_with_fallback(contents=prompt, config=config)
             raw = response.text
             if not raw or not raw.strip():
                 logger.warning('select_ol_matches: empty response from Gemini')
@@ -376,11 +410,7 @@ class GeminiService:
         )
 
         try:
-            response = self._client.models.generate_content(
-                model=MODEL,
-                contents=prompt,
-                config=config,
-            )
+            response = self._generate_content_with_fallback(contents=prompt, config=config)
             raw = response.text
             if not raw or not raw.strip():
                 return {'purpose': 'enjoy', 'mood': None, 'inferred_genres': []}
@@ -432,16 +462,7 @@ class GeminiService:
             response_json_schema=_BOOK_LIST_SCHEMA,
         )
 
-        try:
-            response = self._client.models.generate_content(
-                model=MODEL,
-                contents=prompt,
-                config=config,
-            )
-        except ClientError as exc:
-            self._raise_for_client_error(exc)
-        except ServerError as exc:
-            raise GeminiUnavailableError(str(exc)) from exc
+        response = self._generate_content_with_fallback(contents=prompt, config=config)
 
         raw = response.text
         if not raw or not raw.strip():
@@ -453,7 +474,7 @@ class GeminiService:
         return self._parse_and_validate(raw)
 
     def _raise_for_client_error(self, exc: ClientError) -> None:
-        if exc.code == 429 or (exc.status or '').upper() == 'RESOURCE_EXHAUSTED':
+        if self._is_rate_limit_error(exc):
             raise GeminiRateLimitError(exc.message or str(exc)) from exc
         raise GeminiUnavailableError(exc.message or str(exc)) from exc
 
