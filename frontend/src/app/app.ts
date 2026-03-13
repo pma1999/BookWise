@@ -13,6 +13,7 @@ import { ApiKeyService } from './services/api-key.service';
 export class App implements OnInit {
   title = 'BookWise';
   settingsOpen = false;
+  navOpen = false;
 
   @ViewChild(SettingsPanelComponent) settingsPanel?: SettingsPanelComponent;
 
@@ -37,6 +38,8 @@ export class App implements OnInit {
 
   toggleSettings(): void { this.settingsOpen = !this.settingsOpen; }
   closeSettings(): void { this.settingsOpen = false; }
+  toggleNav(): void { this.navOpen = !this.navOpen; }
+  closeNav(): void { this.navOpen = false; }
   onDataCleared(): void {
     this.settingsOpen = false;
     this.router.navigate(['/']);

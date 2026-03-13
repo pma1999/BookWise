@@ -5,23 +5,38 @@
 .biblioteca-page {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem 1.5rem;
+  padding: 2.5rem 1.5rem;
+  animation: fadeIn 0.4s ease both;
 }
 
 .page-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  padding-bottom: 1.5rem;
-  margin-bottom: 2rem;
-  border-bottom: 1px solid var(--bw-border);
+  padding-bottom: 1.75rem;
+  margin-bottom: 2.5rem;
+  border-bottom: 1px solid rgba(200, 146, 42, 0.12);
+  gap: 1rem;
 
   h1 {
-    font-family: 'Cormorant Garamond', Georgia, serif;
-    font-size: 2rem;
-    font-weight: 600;
+    font-family: var(--bw-font-display);
+    font-size: 2.5rem;
+    font-weight: 700;
     color: var(--bw-text-primary);
-    letter-spacing: 0.03em;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+    position: relative;
+
+    // Decorative gold underline
+    &::after {
+      content: '';
+      display: block;
+      width: 56px;
+      height: 2px;
+      margin-top: 0.625rem;
+      background: linear-gradient(90deg, var(--bw-primary), transparent);
+      border-radius: 1px;
+    }
   }
 
   .back-link {
@@ -32,10 +47,14 @@
     text-decoration: none;
     font-size: 0.875rem;
     font-weight: 500;
-    transition: opacity 0.15s;
+    transition: opacity var(--bw-transition), transform var(--bw-transition-fast);
+    font-family: var(--bw-font-ui);
+    white-space: nowrap;
+    padding-top: 0.25rem;
 
     &:hover {
-      opacity: 0.75;
+      opacity: 0.8;
+      transform: translateX(-2px);
     }
   }
 }
@@ -43,62 +62,91 @@
 .empty-state {
   text-align: center;
   padding: 5rem 2rem;
+  position: relative;
+
+  // Atmospheric glow
+  &::before {
+    content: '';
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(200, 146, 42, 0.07), transparent 70%);
+    pointer-events: none;
+  }
 
   p {
+    font-family: var(--bw-font-body);
     color: var(--bw-text-secondary);
     font-size: 1.125rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
+    line-height: 1.7;
   }
 
   .btn-discover {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
+    padding: 0.875rem 2rem;
     background: var(--bw-primary);
-    color: #1a1208;
-    border-radius: 8px;
+    color: #0d0a06;
+    border-radius: 100px;
     text-decoration: none;
     font-weight: 600;
-    font-size: 0.9375rem;
-    transition: opacity 0.15s;
+    font-size: 1rem;
+    font-family: var(--bw-font-ui);
+    transition: all var(--bw-transition);
+    box-shadow: 0 4px 20px rgba(200, 146, 42, 0.35);
+    letter-spacing: 0.02em;
 
     &:hover {
-      opacity: 0.85;
+      background: var(--bw-primary-light);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 28px rgba(200, 146, 42, 0.5);
+      text-decoration: none;
     }
   }
 }
 
 .library-section {
-  margin-bottom: 3rem;
+  margin-bottom: 3.5rem;
+  animation: fadeIn 0.45s ease both;
+
+  &:nth-child(2) { animation-delay: 0ms; }
+  &:nth-child(3) { animation-delay: 80ms; }
+  &:nth-child(4) { animation-delay: 160ms; }
 }
 
 .section-title {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 1.5rem;
+  font-family: var(--bw-font-display);
+  font-size: 1.625rem;
   font-weight: 600;
   color: var(--bw-text-primary);
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin-bottom: 1.25rem;
-  letter-spacing: 0.02em;
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.01em;
 
   .section-ornament {
     color: var(--bw-primary);
-    opacity: 0.7;
+    opacity: 0.75;
     font-style: normal;
   }
 
   .section-count {
-    font-size: 0.75rem;
-    font-family: inherit;
-    font-weight: 500;
-    padding: 0.125rem 0.625rem;
-    background: rgba(200, 146, 42, 0.12);
+    font-size: 0.6875rem;
+    font-family: var(--bw-font-ui);
+    font-weight: 600;
+    padding: 0.1875rem 0.625rem;
+    background: rgba(200, 146, 42, 0.1);
     color: var(--bw-primary);
     border-radius: 999px;
-    border: 1px solid rgba(200, 146, 42, 0.25);
+    border: 1px solid rgba(200, 146, 42, 0.28);
+    letter-spacing: 0.02em;
   }
 }
 
@@ -112,50 +160,79 @@
 .filter-pill {
   padding: 0.375rem 0.875rem;
   border-radius: 999px;
-  border: 1px solid var(--bw-border);
+  border: 1.5px solid rgba(200, 146, 42, 0.14);
   background: transparent;
   color: var(--bw-text-secondary);
   font-size: 0.875rem;
+  font-family: var(--bw-font-ui);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.1s;
+  transition: all 0.2s ease;
+  font-weight: 500;
 
   &:hover {
     border-color: var(--bw-primary);
     color: var(--bw-primary);
+    background: rgba(200, 146, 42, 0.05);
   }
 
   &.active {
     background: var(--bw-primary);
-    color: #1a1208;
+    color: #0d0a06;
     border-color: var(--bw-primary);
     font-weight: 600;
-    transform: scale(1.04);
+    box-shadow: 0 2px 10px rgba(200, 146, 42, 0.3);
   }
 }
 
 .books-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
   gap: 1rem;
 }
 
 .filter-empty {
+  font-family: var(--bw-font-body);
   color: var(--bw-text-secondary);
   font-size: 0.9375rem;
-  padding: 2rem;
+  padding: 2.5rem;
   text-align: center;
-  border: 1px dashed var(--bw-border);
-  border-radius: 8px;
+  border: 1px dashed rgba(200, 146, 42, 0.18);
+  border-radius: var(--bw-radius-md);
+  font-style: italic;
+  line-height: 1.7;
+}
+
+@media (max-width: 768px) {
+  .biblioteca-page {
+    padding: 1.75rem 1rem;
+  }
+
+  .page-header h1 {
+    font-size: 2rem;
+  }
+
+  .books-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 600px) {
   .books-grid {
-    grid-template-columns: minmax(100%, 1fr);
+    grid-template-columns: 1fr;
   }
 
   .page-header {
     flex-direction: column;
-    align-items: flex-start;
     gap: 1rem;
   }
+
+  .page-header h1 {
+    font-size: 1.875rem;
+  }
+}
+
+// ── Animations ────────────────────────────────────────────
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

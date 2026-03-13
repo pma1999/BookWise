@@ -1,23 +1,41 @@
 .app-header {
-  background: var(--bw-surface);
-  border-bottom: 1px solid var(--bw-border);
+  // Glass morphism header
+  background: rgba(16, 12, 7, 0.88);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border-bottom: 1px solid rgba(200, 146, 42, 0.14);
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 1px 0 rgba(200, 146, 42, 0.08), 0 4px 24px rgba(0, 0, 0, 0.5);
 
+  // Gold accent top bar
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(200, 146, 42, 0.6) 20%,
+      rgba(240, 192, 64, 0.8) 50%,
+      rgba(200, 146, 42, 0.6) 80%,
+      transparent 100%
+    );
+  }
+
+  // Faint gold gradient line at bottom
   &::after {
     content: '';
     position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    bottom: 0; left: 0; right: 0;
     height: 1px;
     background: linear-gradient(
       90deg,
       transparent,
-      rgba(200, 146, 42, 0.35) 30%,
-      rgba(200, 146, 42, 0.35) 70%,
+      rgba(200, 146, 42, 0.25) 30%,
+      rgba(200, 146, 42, 0.25) 70%,
       transparent
     );
   }
@@ -26,10 +44,11 @@
     max-width: 1280px;
     margin: 0 auto;
     padding: 0 1.5rem;
-    height: 68px;
+    height: 72px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 1rem;
   }
 
   .brand {
@@ -38,22 +57,24 @@
     gap: 0.5rem;
     text-decoration: none;
     color: inherit;
+    flex-shrink: 0;
   }
 
   .brand-icon {
-    font-size: 1.4rem;
+    font-size: 1.6rem;
     line-height: 1;
     color: var(--bw-primary);
-    opacity: 0.85;
+    opacity: 0.9;
     font-style: normal;
+    filter: drop-shadow(0 0 6px rgba(200, 146, 42, 0.4));
   }
 
   .brand-name {
-    font-family: 'Cormorant Garamond', Georgia, serif;
-    font-size: 1.5rem;
-    font-weight: 600;
+    font-family: var(--bw-font-display);
+    font-size: 1.75rem;
+    font-weight: 700;
     color: var(--bw-text-primary);
-    letter-spacing: 0.04em;
+    letter-spacing: 0.05em;
   }
 
   .header-nav {
@@ -62,6 +83,7 @@
     gap: 0.25rem;
   }
 
+  // Nav link with animated underline
   .nav-link {
     padding: 0.5rem 0.875rem;
     border-radius: 8px;
@@ -69,22 +91,53 @@
     font-size: 0.9375rem;
     font-weight: 500;
     color: var(--bw-text-secondary);
-    transition: color 0.15s, background 0.15s;
+    transition: color var(--bw-transition-fast), background var(--bw-transition-fast);
+    position: relative;
+
+    // Animated underline
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 4px;
+      left: 50%;
+      right: 50%;
+      height: 1.5px;
+      background: var(--bw-primary);
+      border-radius: 1px;
+      transition: left 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                  right 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity 0.2s ease;
+      opacity: 0;
+    }
 
     &:hover {
       color: var(--bw-text-primary);
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.04);
+
+      &::after {
+        left: 0.875rem;
+        right: 0.875rem;
+        opacity: 0.7;
+      }
     }
 
     &.active {
       color: var(--bw-primary);
-      background: rgba(200, 146, 42, 0.1);
+      background: rgba(200, 146, 42, 0.08);
+
+      &::after {
+        left: 0.875rem;
+        right: 0.875rem;
+        opacity: 1;
+      }
     }
   }
 
   .header-actions {
     display: flex;
     align-items: center;
+    gap: 0.25rem;
+    flex-shrink: 0;
   }
 
   .btn-settings {
@@ -98,7 +151,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.15s, color 0.15s;
+    transition: background var(--bw-transition-fast), color var(--bw-transition-fast);
 
     .material-icons {
       font-size: 1.375rem;
@@ -109,29 +162,95 @@
       color: var(--bw-text-primary);
     }
   }
+
+  // Hamburger button — hidden on desktop
+  .btn-hamburger {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    border: 1px solid rgba(200, 146, 42, 0.18);
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    transition: background var(--bw-transition-fast), border-color var(--bw-transition-fast);
+
+    &:hover {
+      background: rgba(200, 146, 42, 0.08);
+      border-color: rgba(200, 146, 42, 0.35);
+    }
+  }
+
+  .hamburger-line {
+    display: block;
+    width: 18px;
+    height: 1.5px;
+    background: var(--bw-text-secondary);
+    border-radius: 2px;
+    transform-origin: center;
+    transition: transform 0.25s ease, opacity 0.2s ease, width 0.25s ease;
+  }
+
+  // Hamburger → X animation when open
+  .btn-hamburger.open {
+    border-color: rgba(200, 146, 42, 0.4);
+    background: rgba(200, 146, 42, 0.08);
+
+    .hamburger-line:nth-child(1) {
+      transform: translateY(6.5px) rotate(45deg);
+    }
+    .hamburger-line:nth-child(2) {
+      opacity: 0;
+      transform: scaleX(0);
+    }
+    .hamburger-line:nth-child(3) {
+      transform: translateY(-6.5px) rotate(-45deg);
+    }
+
+    .hamburger-line {
+      background: var(--bw-primary);
+    }
+  }
 }
 
+// ── Main Content ──────────────────────────────────────────
 .app-main {
-  min-height: calc(100vh - 68px);
+  min-height: calc(100vh - 72px);
 }
 
+// ── Settings overlay & panel ──────────────────────────────
 .settings-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.55);
   z-index: 200;
   animation: fadeIn 0.2s ease;
 }
 
 .settings-panel-wrapper {
   position: fixed;
-  top: 68px;
+  top: 72px;
   right: 0;
   z-index: 201;
   animation: slideDown 0.2s ease;
   padding: 0.5rem;
 }
 
+// ── Nav overlay (mobile) ──────────────────────────────────
+.nav-overlay {
+  position: fixed;
+  inset: 0;
+  top: 72px;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 98;
+  animation: fadeIn 0.2s ease;
+}
+
+// ── Animations ────────────────────────────────────────────
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -142,11 +261,94 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-@media (max-width: 600px) {
+@keyframes slideInFromTop {
+  from { opacity: 0; transform: translateY(-16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// ── Mobile responsive ─────────────────────────────────────
+@media (max-width: 768px) {
   .app-header {
-    .nav-link {
-      padding: 0.5rem 0.5rem;
-      font-size: 0.8125rem;
+    .btn-hamburger {
+      display: flex;
     }
+
+    // Mobile nav drawer — slides in from top
+    .header-nav {
+      position: fixed;
+      top: 72px;
+      left: 0;
+      right: 0;
+      background: rgba(16, 12, 7, 0.97);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      flex-direction: column;
+      align-items: stretch;
+      padding: 0.5rem 1rem 1rem;
+      transform: translateY(-8px);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity 0.25s ease;
+      z-index: 99;
+      border-bottom: 1px solid var(--bw-border-gold);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+
+      &.open {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .nav-link {
+        padding: 0.875rem 1rem;
+        font-size: 1.0625rem;
+        font-weight: 500;
+        border-radius: var(--bw-radius-sm);
+        border-bottom: 1px solid rgba(200, 146, 42, 0.08);
+        letter-spacing: 0.01em;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        &::after {
+          display: none;
+        }
+
+        &.active {
+          background: rgba(200, 146, 42, 0.1);
+          border-bottom-color: rgba(200, 146, 42, 0.12);
+        }
+      }
+    }
+
+    .brand-name {
+      font-size: 1.5rem;
+    }
+
+    .header-content {
+      padding: 0 1rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .app-header {
+    .header-content {
+      height: 64px;
+    }
+
+    .brand-name {
+      font-size: 1.375rem;
+    }
+
+    .brand-icon {
+      font-size: 1.4rem;
+    }
+  }
+
+  .app-main {
+    min-height: calc(100vh - 64px);
   }
 }

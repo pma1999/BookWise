@@ -1,22 +1,40 @@
 <header class="app-header">
   <div class="header-content">
-    <a routerLink="/" class="brand">
+    <a routerLink="/" class="brand" (click)="closeNav()">
       <span class="brand-icon" aria-hidden="true">❧</span>
       <span class="brand-name">BookWise</span>
     </a>
-    <nav class="header-nav">
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">Descubrir</a>
-      <a routerLink="/biblioteca" routerLinkActive="active" class="nav-link">Mi Biblioteca</a>
-      <a routerLink="/historial" routerLinkActive="active" class="nav-link">Historial</a>
+
+    <nav class="header-nav" [class.open]="navOpen" aria-label="Navegación principal">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link" (click)="closeNav()">Descubrir</a>
+      <a routerLink="/biblioteca" routerLinkActive="active" class="nav-link" (click)="closeNav()">Mi Biblioteca</a>
+      <a routerLink="/historial" routerLinkActive="active" class="nav-link" (click)="closeNav()">Historial</a>
     </nav>
+
     <div class="header-actions">
       <app-user-menu />
       <button class="btn-settings" (click)="toggleSettings()" aria-label="Ajustes" type="button">
         <span class="material-icons">settings</span>
       </button>
+      <button
+        class="btn-hamburger"
+        [class.open]="navOpen"
+        (click)="toggleNav()"
+        aria-label="Abrir menú de navegación"
+        [attr.aria-expanded]="navOpen"
+        type="button"
+      >
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
     </div>
   </div>
 </header>
+
+@if (navOpen) {
+  <div class="nav-overlay" (click)="closeNav()" aria-hidden="true"></div>
+}
 
 @if (settingsOpen) {
   <div class="settings-overlay" (click)="closeSettings()" aria-hidden="true"></div>
