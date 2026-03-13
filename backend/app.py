@@ -26,33 +26,12 @@ from services.pipeline import RecommendationPipeline
 # App setup
 # ──────────────────────────────────────────────
 
-def _configure_logging() -> None:
-    """Configure logging for local dev and Gunicorn/Render production.
-
-    logging.basicConfig() is a no-op when the root logger already has handlers,
-    which is always the case under Gunicorn. Instead, we detect the environment
-    and attach our formatter to the appropriate handlers so logs are visible both
-    locally and in Render's log stream.
-    """
-    fmt = logging.Formatter('%(asctime)s [%(levelname)s] %(name)s: %(message)s')
-    root = logging.getLogger()
-    gunicorn_error = logging.getLogger('gunicorn.error')
-    if gunicorn_error.handlers:
-        # Running under Gunicorn: reuse its handlers (already writing to stdout/stderr,
-        # which Render captures). Apply our format so all app logs are consistent.
-        root.handlers = list(gunicorn_error.handlers)
-        root.setLevel(logging.INFO)
-        for h in root.handlers:
-            h.setFormatter(fmt)
-    else:
-        # Local dev: set up a plain StreamHandler to stdout.
-        handler = logging.StreamHandler()
-        handler.setFormatter(fmt)
-        root.addHandler(handler)
-        root.setLevel(logging.INFO)
-
-
-_configure_logging()
+# Logging is configured here for local dev. Under Gunicorn, gunicorn.conf.py
+# takes over via post_fork so every worker has the correct handlers.
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
