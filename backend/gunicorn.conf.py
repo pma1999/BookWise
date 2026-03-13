@@ -13,6 +13,7 @@ import sys
 
 # ── Gunicorn settings ────────────────────────────────────────────────────────
 loglevel = "info"
+timeout = 120  # seconds – allow time for Gemini/OpenLibrary calls
 accesslog = "-"   # stdout  → Render captures it
 errorlog = "-"    # stderr  → Render captures it
 access_log_format = '%(h)s "%(r)s" %(s)s %(b)sB %(Dms)sms'
