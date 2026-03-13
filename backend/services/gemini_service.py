@@ -366,16 +366,13 @@ class GeminiService:
             'Proporciona el propósito principal (enjoy=disfrutar/entretenimiento, '
             'learn=aprender, reflect=reflexionar, escape=evadirse), el mood/tono '
             'deseado, y géneros inferidos si es posible.',
-            '',
-            'Dispones de la herramienta de búsqueda web. Úsala si necesitas contexto '
-            'sobre géneros literarios, tendencias de lectura o referencias culturales '
-            'mencionadas en el texto para inferir mejor la intención del lector.',
         ]
         prompt = '\n'.join(lines)
 
         config = self._make_config(
             max_output_tokens=1024,
             response_json_schema=_INTENT_INFERENCE_SCHEMA,
+            include_search=False,
         )
 
         try:
