@@ -4,6 +4,7 @@ Exposes POST /api/recommend.
 """
 import logging
 import os
+import re
 import time
 
 from dotenv import load_dotenv
@@ -35,18 +36,35 @@ app = Flask(__name__)
 
 # CORS Configuration
 # In production, set FRONTEND_URL to your Vercel frontend URL
-# Supports multiple origins separated by commas
+# Supports multiple origins separated by commas; supports * wildcard for preview URLs
 _frontend_urls_str = os.getenv('FRONTEND_URL', '')
 logger.info(f'FRONTEND_URL env var: {_frontend_urls_str}')
 
-_frontend_urls = [url.strip() for url in _frontend_urls_str.split(',') if url.strip()] if _frontend_urls_str else []
+
+def _parse_origin(raw: str):
+    """Normalize an origin string and convert glob wildcards to compiled regex."""
+    url = raw.strip().rstrip('/')
+    if '*' in url:
+        # Convert glob wildcard (*) to regex so flask-cors can match dynamic preview URLs
+        # e.g. https://bookwise-git-*.vercel.app → regex ^https://bookwise\-git\-.*\.vercel\.app$
+        pattern = re.escape(url).replace(r'\*', '.*')
+        return re.compile(f'^{pattern}$')
+    return url
+
+
+_frontend_origins = [
+    _parse_origin(url)
+    for url in _frontend_urls_str.split(',')
+    if url.strip()
+] if _frontend_urls_str else []
+
 ALLOWED_ORIGINS = [
     'http://localhost:4200',
     'http://localhost:3000',
-    *_frontend_urls,
+    *_frontend_origins,
 ]
-# Filter out empty strings and allow all origins in development if needed
-origins = [o.strip() for o in ALLOWED_ORIGINS if o.strip()]
+# Filter falsy values and allow all origins in development if no origins configured
+origins = [o for o in ALLOWED_ORIGINS if o]
 if os.getenv('FLASK_ENV') == 'development' and not origins:
     origins = '*'
 
