@@ -100,6 +100,14 @@ GENRE_MAP = {
 
 REQUIRED_FIELDS = {'title', 'author', 'reason'}
 
+# ── AI capabilities config ─────────────────────────────────
+# Gemini 3 models use thinking_level (not thinking_budget).
+# "high" maximises reasoning depth for complex recommendation tasks.
+_THINKING_CONFIG = types.ThinkingConfig(thinking_level='high')
+# Google Search grounding: lets the model verify book existence and
+# access real-time bibliographic data before generating its response.
+_SEARCH_TOOL = types.Tool(google_search=types.GoogleSearch())
+
 # Schema for the OL search correction response
 _OL_CORRECTION_SCHEMA: dict = {
     'type': 'array',
@@ -222,12 +230,15 @@ class GeminiService:
             ]
             for i, book in enumerate(discarded_books):
                 lines.append(f'Libro {i}: "{book["title"]}" de {book["author"]}')
+            lines.append(
+                '\nDispones de la herramienta de búsqueda web. Úsala para buscar el título '
+                'y autor exactos tal como aparecen indexados en OpenLibrary, especialmente '
+                'útil para obras traducidas o con variantes en el nombre del autor.'
+            )
             prompt = '\n'.join(lines)
 
-            config = types.GenerateContentConfig(
-                system_instruction=SYSTEM_PROMPT,
+            config = self._make_config(
                 max_output_tokens=4096,
-                response_mime_type='application/json',
                 response_json_schema=_OL_CORRECTION_SCHEMA,
             )
             response = self._client.models.generate_content(
@@ -280,10 +291,8 @@ class GeminiService:
             return []
         try:
             prompt = self._build_ol_selection_prompt(books_with_candidates)
-            config = types.GenerateContentConfig(
-                system_instruction=SYSTEM_PROMPT,
+            config = self._make_config(
                 max_output_tokens=4096,
-                response_mime_type='application/json',
                 response_json_schema=_OL_SELECTION_SCHEMA,
             )
             response = self._client.models.generate_content(
@@ -356,13 +365,15 @@ class GeminiService:
             'Proporciona el propósito principal (enjoy=disfrutar/entretenimiento, '
             'learn=aprender, reflect=reflexionar, escape=evadirse), el mood/tono '
             'deseado, y géneros inferidos si es posible.',
+            '',
+            'Dispones de la herramienta de búsqueda web. Úsala si necesitas contexto '
+            'sobre géneros literarios, tendencias de lectura o referencias culturales '
+            'mencionadas en el texto para inferir mejor la intención del lector.',
         ]
         prompt = '\n'.join(lines)
 
-        config = types.GenerateContentConfig(
-            system_instruction=SYSTEM_PROMPT,
+        config = self._make_config(
             max_output_tokens=1024,
-            response_mime_type='application/json',
             response_json_schema=_INTENT_INFERENCE_SCHEMA,
         )
 
@@ -388,15 +399,37 @@ class GeminiService:
 
     # ── Internal ───────────────────────────────────────────
 
+    def _make_config(
+        self,
+        *,
+        max_output_tokens: int,
+        response_json_schema: dict | None = None,
+    ) -> types.GenerateContentConfig:
+        """
+        Centralised factory for GenerateContentConfig.
+
+        Every call through this factory gets:
+        - thinking_level='high'  → maximum reasoning depth (Gemini 3 models)
+        - google_search grounding → model can verify book data in real time
+        - system_instruction      → expert librarian persona
+        - response_mime_type      → strict JSON output
+        """
+        return types.GenerateContentConfig(
+            system_instruction=SYSTEM_PROMPT,
+            max_output_tokens=max_output_tokens,
+            response_mime_type='application/json',
+            response_json_schema=response_json_schema,
+            thinking_config=_THINKING_CONFIG,
+            tools=[_SEARCH_TOOL],
+        )
+
     def _call(self, prompt: str) -> list[dict]:
         """
         Single call to Gemini with strict JSON schema enforcement.
         No temperature retry needed: the schema guarantees valid JSON structure.
         """
-        config = types.GenerateContentConfig(
-            system_instruction=SYSTEM_PROMPT,
+        config = self._make_config(
             max_output_tokens=65536,
-            response_mime_type='application/json',
             response_json_schema=_BOOK_LIST_SCHEMA,
         )
 
@@ -507,6 +540,11 @@ class GeminiService:
             plines.append('NO repitas ninguno de estos libros.')
             lines.extend(plines)
 
+        lines.append(
+            '\nDispones de la herramienta de búsqueda web. Úsala si necesitas verificar '
+            'que un libro existe realmente con ese título y autor exactos, o para descubrir '
+            'publicaciones recientes que encajen mejor con lo que el lector busca.'
+        )
         return '\n'.join(lines)
 
     def _build_ol_selection_prompt(self, books_with_candidates: list[dict]) -> str:
@@ -528,6 +566,11 @@ class GeminiService:
                 editions = doc.get('edition_count', '?')
                 lines.append(f'  [{j}] "{ol_title}" / {ol_authors} / {ol_year} — {editions} ediciones')
             lines.append('')
+        lines.append(
+            'Dispones de la herramienta de búsqueda web. Úsala si necesitas verificar '
+            'datos bibliográficos (año de publicación, nombre exacto del autor, ediciones) '
+            'para confirmar cuál candidato de OpenLibrary corresponde al libro correcto.'
+        )
         return '\n'.join(lines)
 
     def _build_similar_prompt(self, seed_book: dict, profile: dict | None, count: int) -> str:
@@ -572,4 +615,9 @@ class GeminiService:
             plines.append('NO repitas ninguno de estos libros.')
             lines.extend(plines)
 
+        lines.append(
+            '\nDispones de la herramienta de búsqueda web. Úsala si necesitas encontrar '
+            'libros similares recientes que quizá no estén en tu contexto de entrenamiento, '
+            'o para verificar que los títulos y autores que propones son correctos.'
+        )
         return '\n'.join(lines)
