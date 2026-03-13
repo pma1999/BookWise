@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError, TimeoutError } from 'rxjs';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { Observable, throwError, TimeoutError, from, switchMap } from 'rxjs';
 import { timeout, catchError } from 'rxjs/operators';
 
 import { RecommendationRequest, RecommendationResponse, ApiError, UserProfile } from '../models/recommendation.model';
 import { Book } from '../models/book.model';
 import { environment } from '../../environments/environment';
+import { ApiKeyService } from './api-key.service';
 
 const API_BASE = (environment.apiUrl || 'http://localhost:5000') + '/api';
 const REQUEST_TIMEOUT_MS = 120_000;
@@ -24,24 +25,37 @@ export interface IntentInferenceResponse {
 
 @Injectable({ providedIn: 'root' })
 export class RecommendationService {
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private apiKeyService: ApiKeyService,
+  ) {}
 
   recommend(request: RecommendationRequest): Observable<RecommendationResponse> {
-    return this.http
-      .post<RecommendationResponse>(`${API_BASE}/recommend`, request)
-      .pipe(
-        timeout(REQUEST_TIMEOUT_MS),
-        catchError(err => this._handleError(err)),
-      );
+    return from(this.apiKeyService.getApiHeaders()).pipe(
+      switchMap(extraHeaders => {
+        const headers = new HttpHeaders(extraHeaders);
+        return this.http
+          .post<RecommendationResponse>(`${API_BASE}/recommend`, request, { headers })
+          .pipe(
+            timeout(REQUEST_TIMEOUT_MS),
+            catchError(err => this._handleError(err)),
+          );
+      }),
+    );
   }
 
   getSimilarRecommendations(request: SimilarRecommendationRequest): Observable<RecommendationResponse> {
-    return this.http
-      .post<RecommendationResponse>(`${API_BASE}/recommend/similar`, request)
-      .pipe(
-        timeout(REQUEST_TIMEOUT_MS),
-        catchError(err => this._handleError(err)),
-      );
+    return from(this.apiKeyService.getApiHeaders()).pipe(
+      switchMap(extraHeaders => {
+        const headers = new HttpHeaders(extraHeaders);
+        return this.http
+          .post<RecommendationResponse>(`${API_BASE}/recommend/similar`, request, { headers })
+          .pipe(
+            timeout(REQUEST_TIMEOUT_MS),
+            catchError(err => this._handleError(err)),
+          );
+      }),
+    );
   }
 
   private _handleError(err: unknown): Observable<never> {
@@ -54,7 +68,6 @@ export class RecommendationService {
         retryable: true,
       };
     } else if (err instanceof HttpErrorResponse) {
-      // Backend returned a structured error
       const body = err.error;
       if (body?.error?.code) {
         apiError = body.error as ApiError;

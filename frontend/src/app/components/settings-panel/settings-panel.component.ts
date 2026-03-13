@@ -14,6 +14,7 @@ import { LocalStorageService } from '../../services/local-storage.service';
 import { UserDataService } from '../../services/user-data.service';
 import { AuthService } from '../../services/auth.service';
 import { SupabaseService } from '../../services/supabase.service';
+import { ApiKeyService } from '../../services/api-key.service';
 import { Book } from '../../models/book.model';
 import { BookwiseProfile, SavedBook, RejectedBook } from '../../models/recommendation.model';
 
@@ -29,7 +30,7 @@ export class SettingsPanelComponent {
   @Output() closed = new EventEmitter<void>();
   @Output() dataCleared = new EventEmitter<void>();
 
-  activeTab: 'data' | 'account' = 'data';
+  activeTab: 'data' | 'api-key' | 'account' = 'data';
   deleteStep: 'idle' | 'confirming' = 'idle';
   deleteConfirmValue = '';
   importError: string | null = null;
@@ -41,18 +42,32 @@ export class SettingsPanelComponent {
   userEmail: string | null = null;
   userName: string | null = null;
 
+  // API key
+  apiKeyInput = '';
+  apiKeyVisible = false;
+  apiKeySaving = false;
+  apiKeyDeleting = false;
+  apiKeyError: string | null = null;
+  apiKeyHasKey = false;
+  apiKeyHint: string | null = null;
+
   constructor(
     private ls: LocalStorageService,
     private userData: UserDataService,
     private auth: AuthService,
     private supabase: SupabaseService,
+    private apiKey: ApiKeyService,
     private cdr: ChangeDetectorRef,
   ) {
-    // Subscribe to auth state
     this.auth.authState$.subscribe(state => {
       this.isAuthenticated = state.isAuthenticated;
       this.userEmail = state.user?.email ?? null;
       this.userName = state.user?.user_metadata?.['full_name'] ?? null;
+      this.cdr.markForCheck();
+    });
+    this.apiKey.status$.subscribe(status => {
+      this.apiKeyHasKey = status.hasKey;
+      this.apiKeyHint = status.hint;
       this.cdr.markForCheck();
     });
   }
@@ -192,6 +207,39 @@ export class SettingsPanelComponent {
     // Clear both localStorage and Supabase data if authenticated
     await this.userData.clearAllData();
     this.dataCleared.emit();
+  }
+
+  async onSaveApiKey(): Promise<void> {
+    if (!this.apiKeyInput.trim()) return;
+    this.apiKeySaving = true;
+    this.apiKeyError = null;
+    this.cdr.markForCheck();
+    try {
+      await this.apiKey.saveKey(this.apiKeyInput.trim());
+      this.apiKeyInput = '';
+      this.apiKeyVisible = false;
+      this.snackBar.open('Clave de API guardada correctamente', 'Cerrar', { duration: 3000 });
+    } catch (err: unknown) {
+      this.apiKeyError = err instanceof Error ? err.message : 'Error al guardar la clave.';
+    } finally {
+      this.apiKeySaving = false;
+      this.cdr.markForCheck();
+    }
+  }
+
+  async onDeleteApiKey(): Promise<void> {
+    this.apiKeyDeleting = true;
+    this.apiKeyError = null;
+    this.cdr.markForCheck();
+    try {
+      await this.apiKey.deleteKey();
+      this.snackBar.open('Clave de API eliminada', 'Cerrar', { duration: 3000 });
+    } catch (err: unknown) {
+      this.apiKeyError = err instanceof Error ? err.message : 'Error al eliminar la clave.';
+    } finally {
+      this.apiKeyDeleting = false;
+      this.cdr.markForCheck();
+    }
   }
 
   async onLogout(): Promise<void> {
