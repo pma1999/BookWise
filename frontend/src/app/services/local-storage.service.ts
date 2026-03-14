@@ -39,7 +39,7 @@ export class LocalStorageService {
     );
     if (!exists) {
       const entry: SavedBook = {
-        id: book.id,
+        id: book.work_id || book.id,
         title: book.title,
         author: book.author,
         cover_url: book.cover_url,
@@ -94,7 +94,7 @@ export class LocalStorageService {
       profile.saved_books[idx].rating = rating;
     } else {
       profile.saved_books.push({
-        id: book.id,
+        id: book.work_id || book.id,
         title: book.title,
         author: book.author,
         cover_url: book.cover_url,

@@ -82,7 +82,7 @@ export class UserDataService {
 
     const { error } = await this.supabase.getClient().from('saved_books').insert({
       user_id: userId,
-      openlibrary_id: book.id,
+      openlibrary_id: book.work_id || book.id,
       title: book.title,
       author: book.author,
       cover_url: book.cover_url,
@@ -155,7 +155,7 @@ export class UserDataService {
       // Insert new
       const { error } = await this.supabase.getClient().from('saved_books').insert({
         user_id: userId,
-        openlibrary_id: book.id,
+        openlibrary_id: book.work_id || book.id,
         title: book.title,
         author: book.author,
         cover_url: book.cover_url,

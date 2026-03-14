@@ -23,6 +23,28 @@ export interface IntentInferenceResponse {
   inferred_genres: string[];
 }
 
+export interface ManualSearchRequest {
+  q: string;
+  page?: number;
+  limit?: number;
+  language?: string | null;
+  subject?: string | null;
+  year_from?: number | null;
+  year_to?: number | null;
+}
+
+export interface ManualSearchResponse {
+  books: Book[];
+  meta: {
+    num_found: number;
+    start: number;
+    page: number;
+    limit: number;
+    has_next_page: boolean;
+    processing_time_ms: number;
+  };
+}
+
 @Injectable({ providedIn: 'root' })
 export class RecommendationService {
   constructor(
@@ -44,6 +66,24 @@ export class RecommendationService {
     const headers = new HttpHeaders(this.apiKeyService.getApiHeaders());
     return this.http
       .post<RecommendationResponse>(`${API_BASE}/recommend/similar`, request, { headers })
+      .pipe(
+        timeout(REQUEST_TIMEOUT_MS),
+        catchError(err => this._handleError(err)),
+      );
+  }
+
+  searchOpenLibrary(request: ManualSearchRequest): Observable<ManualSearchResponse> {
+    const params = new URLSearchParams();
+    params.set('q', request.q.trim());
+    if (request.page) params.set('page', `${request.page}`);
+    if (request.limit) params.set('limit', `${request.limit}`);
+    if (request.language) params.set('language', request.language);
+    if (request.subject) params.set('subject', request.subject);
+    if (request.year_from) params.set('year_from', `${request.year_from}`);
+    if (request.year_to) params.set('year_to', `${request.year_to}`);
+
+    return this.http
+      .get<ManualSearchResponse>(`${API_BASE}/books/search?${params.toString()}`)
       .pipe(
         timeout(REQUEST_TIMEOUT_MS),
         catchError(err => this._handleError(err)),
