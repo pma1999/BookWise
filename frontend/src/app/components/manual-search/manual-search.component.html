@@ -1,0 +1,100 @@
+<div class="manual-page">
+  <section class="manual-hero">
+    <div class="hero-copy">
+      <p class="eyebrow">OPENLIBRARY EXPLORER</p>
+      <h1>Búsqueda manual, biblioteca perfecta.</h1>
+      <p>
+        Encuentra cualquier libro por título, autor o ISBN y añádelo en un clic a
+        <strong>Quiero leer</strong> o márcalo como <strong>Leído y valorado</strong>.
+      </p>
+    </div>
+    <a routerLink="/biblioteca" class="library-link">Ir a mi biblioteca →</a>
+  </section>
+
+  <section class="search-shell">
+    <aside class="filters-card">
+      <h2>Filtro editorial</h2>
+
+      <label>
+        <span>Idioma</span>
+        <select [(ngModel)]="language">
+          <option value="">Todos</option>
+          <option value="spa">Español</option>
+          <option value="eng">Inglés</option>
+        </select>
+      </label>
+
+      <label>
+        <span>Materia</span>
+        <input [(ngModel)]="subject" type="text" placeholder="fantasy, classics, psychology…" />
+      </label>
+
+      <div class="year-grid">
+        <label>
+          <span>Año desde</span>
+          <input [(ngModel)]="yearFrom" type="number" min="1000" max="2100" />
+        </label>
+        <label>
+          <span>Año hasta</span>
+          <input [(ngModel)]="yearTo" type="number" min="1000" max="2100" />
+        </label>
+      </div>
+
+      <button class="btn-apply" type="button" (click)="search(true)">Aplicar búsqueda</button>
+    </aside>
+
+    <div class="results-column">
+      <form class="query-bar" (submit)="search(true); $event.preventDefault()">
+        <input
+          [(ngModel)]="query"
+          name="query"
+          type="text"
+          placeholder="Ej: Cien años de soledad, Tolkien, 9788497592208..."
+          autocomplete="off"
+        />
+        <button type="submit">Buscar</button>
+      </form>
+
+      @if (error) {
+        <p class="error-msg">{{ error }}</p>
+      }
+
+      @if (searched) {
+        <p class="results-meta">
+          {{ totalResults }} resultados · Página {{ page }}
+        </p>
+      }
+
+      @if (isLoading && books.length === 0) {
+        <p class="status">Buscando en OpenLibrary…</p>
+      }
+
+      @if (!isLoading && searched && books.length === 0) {
+        <p class="status">No hay resultados con esos filtros. Prueba con menos restricciones.</p>
+      }
+
+      <div class="results-grid">
+        @for (book of books; track book.id ?? book.title) {
+          <app-book-card
+            [book]="book"
+            variant="discovery"
+            [isSaved]="isBookSaved(book)"
+            [isRead]="isBookRead(book)"
+            [bookRating]="getBookRating(book)"
+            (saved)="onSave($event)"
+            (unsaved)="onUnsave($event)"
+            (rated)="onRate($event)"
+          />
+        }
+      </div>
+
+      @if (hasNextPage) {
+        <div class="more-row">
+          <button class="btn-more" [disabled]="isLoading" type="button" (click)="loadMore()">
+            {{ isLoading ? 'Cargando…' : 'Cargar más resultados' }}
+          </button>
+        </div>
+      }
+    </div>
+  </section>
+</div>

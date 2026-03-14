@@ -15,6 +15,7 @@ import logging
 import os
 import re
 import time
+import requests
 
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request
@@ -340,6 +341,58 @@ def recommend_similar():
             False, 200,
         )
 
+    return jsonify(result), 200
+
+
+@app.route('/api/books/search', methods=['GET'])
+def books_search():
+    """Manual OpenLibrary search for adding books directly to user library."""
+    query = (request.args.get('q') or '').strip()
+    if not query:
+        return _error_response('INVALID_REQUEST', 'El parámetro "q" es obligatorio.', False, 400)
+
+    try:
+        page = int(request.args.get('page', '1'))
+        limit = int(request.args.get('limit', '12'))
+    except ValueError:
+        return _error_response('INVALID_REQUEST', 'Los parámetros page y limit deben ser numéricos.', False, 400)
+
+    language = (request.args.get('language') or '').strip() or None
+    subject = (request.args.get('subject') or '').strip() or None
+
+    year_from_raw = (request.args.get('year_from') or '').strip()
+    year_to_raw = (request.args.get('year_to') or '').strip()
+    try:
+        year_from = int(year_from_raw) if year_from_raw else None
+        year_to = int(year_to_raw) if year_to_raw else None
+    except ValueError:
+        return _error_response('INVALID_REQUEST', 'Los parámetros year_from y year_to deben ser numéricos.', False, 400)
+
+    start = time.time()
+    try:
+        openlibrary = OpenLibraryService()
+        result = openlibrary.search_books(
+            query=query,
+            page=page,
+            limit=limit,
+            language=language,
+            year_from=year_from,
+            year_to=year_to,
+            subject=subject,
+        )
+    except requests.RequestException:
+        return _error_response(
+            'OPENLIBRARY_UNAVAILABLE',
+            'OpenLibrary no está disponible temporalmente. Inténtalo en unos segundos.',
+            True,
+            503,
+        )
+    except Exception as e:
+        logger.exception('Unexpected error in /api/books/search: %s', e)
+        return _error_response('INTERNAL_ERROR', 'Error interno del servidor. Inténtalo de nuevo.', True, 500)
+
+    elapsed_ms = int((time.time() - start) * 1000)
+    result['meta']['processing_time_ms'] = elapsed_ms
     return jsonify(result), 200
 
 

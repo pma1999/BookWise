@@ -1,5 +1,7 @@
 export interface Book {
   id: string | null;
+  work_id?: string | null;
+  edition_id?: string | null;
   title: string;
   author: string;
   year: number | null;
@@ -12,4 +14,5 @@ export interface Book {
   rating: number | null;
   openlibrary_url: string | null;
   isbn: string | null;
+  languages?: string[];
 }

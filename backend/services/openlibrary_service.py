@@ -15,6 +15,7 @@ import logging
 import time
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from urllib.parse import quote_plus
 
 import requests
 
@@ -128,6 +129,106 @@ class OpenLibraryService:
                 last_exc = exc
 
         raise last_exc  # propagate after all retries exhausted
+
+    def search_books(
+        self,
+        *,
+        query: str,
+        page: int = 1,
+        limit: int = 12,
+        language: str | None = None,
+        year_from: int | None = None,
+        year_to: int | None = None,
+        subject: str | None = None,
+    ) -> dict:
+        """Manual OpenLibrary search endpoint data, normalized for frontend use."""
+        clean_query = (query or '').strip()
+        clean_limit = max(1, min(limit, 30))
+        clean_page = max(1, page)
+
+        if not clean_query:
+            return {
+                'books': [],
+                'meta': {'num_found': 0, 'start': 0, 'page': clean_page, 'limit': clean_limit, 'has_next_page': False},
+            }
+
+        params: dict[str, str | int] = {
+            'q': clean_query,
+            'page': clean_page,
+            'limit': clean_limit,
+            'fields': 'key,title,author_name,first_publish_year,cover_i,edition_count,subject,language,ratings_average,isbn,edition_key',
+        }
+        if language:
+            params['language'] = language
+        if year_from:
+            params['first_publish_year'] = year_from
+        if year_to and year_to != year_from:
+            params['publish_year'] = year_to
+        if subject:
+            params['subject'] = subject
+
+        self._throttle()
+        response = requests.get(
+            f'{OL_BASE}/search.json',
+            params=params,
+            headers=OL_HEADERS,
+            timeout=REQUEST_TIMEOUT,
+        )
+        response.raise_for_status()
+        payload = response.json()
+        docs = payload.get('docs', [])
+        books = [self._map_search_doc(doc) for doc in docs]
+
+        num_found = int(payload.get('numFound', 0) or 0)
+        start = int(payload.get('start', 0) or 0)
+        return {
+            'books': books,
+            'meta': {
+                'num_found': num_found,
+                'start': start,
+                'page': clean_page,
+                'limit': clean_limit,
+                'has_next_page': (start + len(books)) < num_found,
+            },
+        }
+
+    def _map_search_doc(self, doc: dict) -> dict:
+        work_key = doc.get('key') or ''
+        work_id = work_key.split('/')[-1] if work_key else None
+        edition_keys = doc.get('edition_key') or []
+        edition_id = edition_keys[0] if edition_keys else None
+
+        cover_i = doc.get('cover_i')
+        cover_url = f'{COVERS_BASE}/b/id/{cover_i}-M.jpg' if cover_i else None
+        cover_url_large = f'{COVERS_BASE}/b/id/{cover_i}-L.jpg' if cover_i else None
+
+        isbns = doc.get('isbn') or []
+        isbn = isbns[0] if isbns else None
+        if not cover_url and isbn:
+            cover_url = f'{COVERS_BASE}/b/isbn/{quote_plus(isbn)}-M.jpg'
+            cover_url_large = f'{COVERS_BASE}/b/isbn/{quote_plus(isbn)}-L.jpg'
+
+        authors = doc.get('author_name') or []
+        author = ', '.join(authors[:2]) if authors else 'Autor desconocido'
+
+        return {
+            'id': work_id,
+            'work_id': work_id,
+            'edition_id': edition_id,
+            'title': doc.get('title') or 'Título desconocido',
+            'author': author,
+            'year': doc.get('first_publish_year'),
+            'cover_url': cover_url,
+            'cover_url_large': cover_url_large,
+            'description': None,
+            'reason': 'Añadido manualmente desde OpenLibrary.',
+            'subjects': (doc.get('subject') or [])[:5],
+            'edition_count': doc.get('edition_count'),
+            'rating': round(doc['ratings_average'], 1) if doc.get('ratings_average') else None,
+            'openlibrary_url': f'{OL_BASE}{work_key}' if work_key else None,
+            'isbn': isbn,
+            'languages': doc.get('language') or [],
+        }
 
     def _validate_single(self, book: dict) -> dict | None:
         """
@@ -318,6 +419,8 @@ class OpenLibraryService:
 
         return {
             'id': work_id,
+            'work_id': work_id,
+            'edition_id': None,
             'title': book['title'],
             'author': book['author'],
             'year': doc.get('first_publish_year') or book.get('year'),
@@ -330,6 +433,7 @@ class OpenLibraryService:
             'rating': round(doc['ratings_average'], 1) if doc.get('ratings_average') else None,
             'openlibrary_url': f'{OL_BASE}{work_key}' if work_key else None,
             'isbn': isbn,
+            'languages': doc.get('language') or [],
         }
 
     def _fetch_description(self, work_id: str | None) -> str | None:
@@ -364,6 +468,8 @@ class OpenLibraryService:
         """Return minimal enriched object when enrichment fails entirely."""
         return {
             'id': None,
+            'work_id': None,
+            'edition_id': None,
             'title': book['title'],
             'author': book['author'],
             'year': book.get('year'),
@@ -376,4 +482,5 @@ class OpenLibraryService:
             'rating': None,
             'openlibrary_url': None,
             'isbn': None,
+            'languages': [],
         }

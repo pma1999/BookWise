@@ -6,6 +6,11 @@ import { NoAuthGuard } from './guards/no-auth.guard';
 export const routes: Routes = [
   { path: '', component: HomeComponent },
   {
+    path: 'buscar',
+    loadComponent: () =>
+      import('./components/manual-search/manual-search.component').then(m => m.ManualSearchComponent),
+  },
+  {
     path: 'auth',
     loadComponent: () =>
       import('./components/auth/auth.component').then(m => m.AuthComponent),
